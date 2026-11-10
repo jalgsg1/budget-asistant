@@ -1,0 +1,31 @@
+# Entorno virtual
+venv/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Archivos de configuración o sensibles
+.env
+
+# Archivos de datos
+# data/raw/
+# data/processed/
+
+# Otros
+.DS_Store
+
+documents
+*.ann
+.venv
+.env
+*.gz
+*.sqlite3
+src/rag_env/*
+/chat_history.json
+wise_backend/app/data/datasets/*
+/ChatApi/chatEnv
+/notebooks/1_prueba.ipynb

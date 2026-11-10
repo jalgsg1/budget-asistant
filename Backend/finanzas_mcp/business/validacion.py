@@ -187,7 +187,9 @@ def validar_aritmetica(subtotal: float, iva: float, total: float) -> ValidationR
         ``is_valid=True`` si la diferencia está dentro de la tolerancia de ±0.01.
         ``error_code="ARITHMETIC_INCONSISTENCY"`` en caso contrario.
     """
-    diferencia: float = abs(subtotal + iva - total)
+    # Redondear a 2 decimales evita falsos rechazos por error de punto flotante
+    # (p. ej. 100.0 + 13.0 - 113.01 = 0.01000000000000512).
+    diferencia: float = round(abs(subtotal + iva - total), 2)
 
     if diferencia > 0.01:
         return ValidationResult(

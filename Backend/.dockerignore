@@ -1,0 +1,9 @@
+.venv
+**/__pycache__
+*.pyc
+.git
+.hypothesis
+.pytest_cache
+.env
+data/
+traces/

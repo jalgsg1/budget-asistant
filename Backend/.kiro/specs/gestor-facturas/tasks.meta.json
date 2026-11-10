@@ -121,6 +121,11 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794284008179
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284117484
       }
     ],
     "6. Checkpoint — pruebas de lógica de negocio": [
@@ -128,6 +133,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283617927
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284124204
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284491063
       }
     ],
     "7.1 Implementar `finanzas_mcp/server.py`": [
@@ -135,6 +150,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618015
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284502155
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794285285279
       }
     ],
     "8.1 Implementar `ocr_mcp/ocr_client.py`": [
@@ -142,6 +167,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618103
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284504482
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794285285816
       }
     ],
     "8.2 Implementar `ocr_mcp/server.py`": [
@@ -149,6 +184,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618186
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794285295566
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290303470
       }
     ],
     "9. Trazador (`agent/tracer.py`)": [
@@ -156,6 +201,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618283
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284506705
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794285286117
       }
     ],
     "10.1 Implementar carga de política y gestión de límites": [
@@ -163,6 +218,11 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618367
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794285296004
       }
     ],
     "10.2 Implementar el pipeline SKILL de seis pasos": [
@@ -170,6 +230,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618507
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290313111
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290548888
       }
     ],
     "11. Checkpoint — pruebas del agente y MCP": [
@@ -177,6 +247,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618679
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290731694
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290787704
       }
     ],
     "12. Interfaz de línea de comandos (`agent/main.py`)": [
@@ -184,6 +264,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618826
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290557429
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290675790
       }
     ],
     "13.1 Escribir pruebas unitarias para R1–R4 (validación de campos, fecha, moneda, aritmética)": [
@@ -191,6 +281,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283618989
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290557648
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290676229
       }
     ],
     "13.2 Escribir pruebas unitarias para R5–R8 (duplicados, categoría, confirmación)": [
@@ -198,6 +298,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283619193
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290557883
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290676504
       }
     ],
     "13.3 Escribir pruebas unitarias para R9–R11 (filtros, aislamiento, límites)": [
@@ -205,6 +315,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283619282
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290558060
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290677843
       }
     ],
     "14.1 Crear estructura del conjunto de evaluación en `eval/`": [
@@ -212,6 +332,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283619417
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290558776
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290677969
       }
     ],
     "14.2 Crear plantilla de análisis de seguridad en `security/injection_analysis.md`": [
@@ -219,6 +349,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283619567
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290679532
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290730339
       }
     ],
     "15. Docker": [
@@ -226,6 +366,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283619679
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290679785
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290730991
       }
     ],
     "16. Checkpoint final — suite completa": [
@@ -233,6 +383,16 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283619800
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290788085
+      },
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290851693
       }
     ],
     "4. Lógica de negocio — validación": [
@@ -240,6 +400,48 @@
         "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
         "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
         "timestamp": 1794283939898
+      }
+    ],
+    "5. Lógica de negocio — duplicados y transacciones": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284117627
+      }
+    ],
+    "7. Servidor MCP `finanzas-mcp`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794285285400
+      }
+    ],
+    "8. Servidor MCP `ocr-mcp`": [
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290303782
+      }
+    ],
+    "10. Agente LangChain (`agent/agent.py`)": [
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290549380
+      }
+    ],
+    "13. Pruebas unitarias de cobertura de reglas de negocio": [
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290678174
+      }
+    ],
+    "14. Infraestructura de evaluación y análisis de seguridad": [
+      {
+        "executionId": "b3079772-df28-41ff-8644-9d461a952c81",
+        "chatSessionId": "sess_df3bb4f9-ffd3-4d3d-8eb3-501d6f3b784b",
+        "timestamp": 1794290730654
       }
     ]
   }

@@ -1,0 +1,17 @@
+services:
+  gestor-facturas:
+    build: .
+    image: gestor-facturas:latest
+    stdin_open: true
+    tty: true
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DB_PATH: /app/data/facturas.db
+      INVOICES_DIR: /app/facturas
+    volumes:
+      # SQLite persists on the host across container restarts
+      - ./data:/app/data
+      # Invoice images/PDFs provided by the user
+      - ./facturas:/app/facturas

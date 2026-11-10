@@ -1,5 +1,6 @@
 langchain==0.3.25
 langchain-openai==0.3.16
+langchain-anthropic==0.3.13
 mcp==1.9.1
 hypothesis==6.131.15
 python-dotenv==1.1.0

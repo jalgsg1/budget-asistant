@@ -1,0 +1,19 @@
+{
+  "trace_id": "0588b001-27a2-4f4f-95f2-da19322b2dde",
+  "user_id": "user_test",
+  "image_path": "facturas/test.jpg",
+  "entries": [
+    {
+      "step": 1,
+      "action": "ocr_imagen",
+      "input_summary": "Sent image path: facturas/test.jpg",
+      "output_summary": "Received text with confidence 0.95",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-10T04:28:33.179518+00:00"
+    }
+  ],
+  "final_status": "success",
+  "termination_reason": null,
+  "created_at": "2026-11-10T04:28:33.179518+00:00",
+  "transaction_id": 42
+}

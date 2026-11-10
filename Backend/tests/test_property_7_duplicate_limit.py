@@ -12,6 +12,7 @@ external network or file-system dependencies.
 from __future__ import annotations
 
 import sqlite3
+import unittest
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -71,133 +72,145 @@ class _InMemoryRepo(TransactionRepository):
 # Property 7 — duplicate detection result bound
 # ---------------------------------------------------------------------------
 
-@settings(max_examples=100)
-@given(
-    n=st.integers(min_value=1, max_value=50),
-    comercio=_TEXT_ST,
-    fecha=_DATE_ST,
-    total=_TOTAL_ST,
-    moneda=_MONEDA_ST,
-    categoria=_TEXT_ST,
-    user_id=_TEXT_ST,
-)
-def test_property_7_find_duplicates_result_bound(
-    n: int,
-    comercio: str,
-    fecha: str,
-    total: float,
-    moneda: str,
-    categoria: str,
-    user_id: str,
-) -> None:
-    """
-    **Property 7: Duplicate detection result bound**
+class TestProperty7DuplicateLimit(unittest.TestCase):
+    """Property 7: Duplicate detection result bound — Validates: Requirements 6.2, 10.3"""
 
-    **Validates: Requirements 6.2, 10.3**
+    @settings(max_examples=100)
+    @given(
+        n=st.integers(min_value=1, max_value=50),
+        comercio=_TEXT_ST,
+        fecha=_DATE_ST,
+        total=_TOTAL_ST,
+        moneda=_MONEDA_ST,
+        categoria=_TEXT_ST,
+        user_id=_TEXT_ST,
+    )
+    def test_property_7_find_duplicates_result_bound(
+        self,
+        n: int,
+        comercio: str,
+        fecha: str,
+        total: float,
+        moneda: str,
+        categoria: str,
+        user_id: str,
+    ) -> None:
+        """
+        **Property 7: Duplicate detection result bound**
 
-    For any number *n* of matching records inserted (1 ≤ n ≤ 50),
-    `find_duplicates` must return at most 10 results.  This is true even when
-    the caller passes `limit=10` explicitly (the default) because the repository
-    enforces that maximum defensively.
-    """
-    repo = _InMemoryRepo()
-    try:
-        # Insert *n* records all sharing the same (comercio, fecha, total, user_id)
-        for _ in range(n):
-            repo.insert(
-                Transaction(
-                    user_id=user_id,
-                    comercio=comercio,
-                    fecha=fecha,
-                    total=total,
-                    moneda=moneda,
-                    categoria=categoria,
+        **Validates: Requirements 6.2, 10.3**
+
+        For any number *n* of matching records inserted (1 ≤ n ≤ 50),
+        `find_duplicates` must return at most 10 results.  This is true even when
+        the caller passes `limit=10` explicitly (the default) because the repository
+        enforces that maximum defensively.
+        """
+        repo = _InMemoryRepo()
+        try:
+            # Insert *n* records all sharing the same (comercio, fecha, total, user_id)
+            for _ in range(n):
+                repo.insert(
+                    Transaction(
+                        user_id=user_id,
+                        comercio=comercio,
+                        fecha=fecha,
+                        total=total,
+                        moneda=moneda,
+                        categoria=categoria,
+                    )
                 )
+
+            result = repo.find_duplicates(
+                comercio=comercio,
+                fecha=fecha,
+                total=total,
+                user_id=user_id,
+                limit=10,
             )
 
-        result = repo.find_duplicates(
-            comercio=comercio,
-            fecha=fecha,
-            total=total,
-            user_id=user_id,
-            limit=10,
-        )
-
-        # --- primary assertion: result is bounded by 10 ---
-        assert len(result) <= 10, (
-            f"find_duplicates returned {len(result)} records but must return at most 10 "
-            f"(inserted {n} matching rows for user_id={user_id!r})"
-        )
-
-        # --- secondary assertion: all returned records belong to the queried user ---
-        for record in result:
-            assert record.user_id == user_id, (
-                f"find_duplicates returned record with user_id={record.user_id!r} "
-                f"but was queried as user_id={user_id!r}"
+            # --- primary assertion: result is bounded by 10 ---
+            self.assertLessEqual(
+                len(result), 10,
+                f"find_duplicates returned {len(result)} records but must return at most 10 "
+                f"(inserted {n} matching rows for user_id={user_id!r})"
             )
-    finally:
-        repo.close()
 
-
-@settings(max_examples=100)
-@given(
-    n=st.integers(min_value=11, max_value=50),
-    comercio=_TEXT_ST,
-    fecha=_DATE_ST,
-    total=_TOTAL_ST,
-    moneda=_MONEDA_ST,
-    categoria=_TEXT_ST,
-    user_id=_TEXT_ST,
-)
-def test_property_7_find_duplicates_hard_cap_above_10(
-    n: int,
-    comercio: str,
-    fecha: str,
-    total: float,
-    moneda: str,
-    categoria: str,
-    user_id: str,
-) -> None:
-    """
-    **Property 7: Duplicate detection result bound** — hard-cap variant
-
-    **Validates: Requirements 6.2, 10.3**
-
-    Specifically exercises the case where more than 10 matching rows exist
-    (11 ≤ n ≤ 50).  Even in this scenario the result list must never exceed 10
-    entries, confirming the LIMIT clause is enforced unconditionally.
-    """
-    repo = _InMemoryRepo()
-    try:
-        for _ in range(n):
-            repo.insert(
-                Transaction(
-                    user_id=user_id,
-                    comercio=comercio,
-                    fecha=fecha,
-                    total=total,
-                    moneda=moneda,
-                    categoria=categoria,
+            # --- secondary assertion: all returned records belong to the queried user ---
+            for record in result:
+                self.assertEqual(
+                    record.user_id, user_id,
+                    f"find_duplicates returned record with user_id={record.user_id!r} "
+                    f"but was queried as user_id={user_id!r}"
                 )
+        finally:
+            repo.close()
+
+    @settings(max_examples=100)
+    @given(
+        n=st.integers(min_value=11, max_value=50),
+        comercio=_TEXT_ST,
+        fecha=_DATE_ST,
+        total=_TOTAL_ST,
+        moneda=_MONEDA_ST,
+        categoria=_TEXT_ST,
+        user_id=_TEXT_ST,
+    )
+    def test_property_7_find_duplicates_hard_cap_above_10(
+        self,
+        n: int,
+        comercio: str,
+        fecha: str,
+        total: float,
+        moneda: str,
+        categoria: str,
+        user_id: str,
+    ) -> None:
+        """
+        **Property 7: Duplicate detection result bound** — hard-cap variant
+
+        **Validates: Requirements 6.2, 10.3**
+
+        Specifically exercises the case where more than 10 matching rows exist
+        (11 ≤ n ≤ 50).  Even in this scenario the result list must never exceed 10
+        entries, confirming the LIMIT clause is enforced unconditionally.
+        """
+        repo = _InMemoryRepo()
+        try:
+            for _ in range(n):
+                repo.insert(
+                    Transaction(
+                        user_id=user_id,
+                        comercio=comercio,
+                        fecha=fecha,
+                        total=total,
+                        moneda=moneda,
+                        categoria=categoria,
+                    )
+                )
+
+            result = repo.find_duplicates(
+                comercio=comercio,
+                fecha=fecha,
+                total=total,
+                user_id=user_id,
+                limit=10,
             )
 
-        result = repo.find_duplicates(
-            comercio=comercio,
-            fecha=fecha,
-            total=total,
-            user_id=user_id,
-            limit=10,
-        )
-
-        assert len(result) <= 10, (
-            f"find_duplicates returned {len(result)} records (inserted {n} > 10 matching rows); "
-            f"hard cap of 10 was not enforced for user_id={user_id!r}"
-        )
-
-        for record in result:
-            assert record.user_id == user_id, (
-                f"find_duplicates returned record with user_id={record.user_id!r} "
-                f"but was queried as user_id={user_id!r}"
+            self.assertLessEqual(
+                len(result), 10,
+                f"find_duplicates returned {len(result)} records (inserted {n} > 10 matching rows); "
+                f"hard cap of 10 was not enforced for user_id={user_id!r}"
             )
-    finally:
-        repo.close()
+
+            for record in result:
+                self.assertEqual(
+                    record.user_id, user_id,
+                    f"find_duplicates returned record with user_id={record.user_id!r} "
+                    f"but was queried as user_id={user_id!r}"
+                )
+        finally:
+            repo.close()
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,13 @@
+# Virtual environment
+.venv/
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Private directories
+secrets/
+private/
