@@ -76,3 +76,12 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 **R11 — Límite de pasos y tokens:** cada factura tiene un máximo de 8 pasos de agente y un tope de tokens por ejecución; superarlo detiene el procesamiento.
 
 ---
+
+## No negociables
+
+- **Servidor MCP propio** con ≥ 3 tools, al menos 1 de escritura con validación en el servidor; defensa en profundidad: el servidor no confía en el agente.
+- **SKILL.md** con procedimiento, reglas y criterio de parada; desacoplado del modelo que lo ejecuta.
+- **politica.json** que declare tools permitidas, con confirmación, denegadas u ocultas; límites de pasos y tokens.
+- **Trazas** por ejecución: cada llamada, decisión, tokens y duración.
+- **Conjunto de evaluación** de ≥ 40 casos (≥ 30% difíciles), etiquetados por dos personas con κ de Cohen reportado.
+- **Análisis de seguridad** con ≥ 5 ataques de inyección indirecta documentados y su resultado.

@@ -1,0 +1,17 @@
+{
+  "tools": {
+    "ocr_imagen":            "permitida",
+    "validar_factura":       "permitida",
+    "buscar_duplicados":     "permitida",
+    "listar_transacciones":  "permitida",
+    "registrar_transaccion": "requiere_confirmacion"
+  },
+  "step_limit": 8,
+  "token_limit": 4000,
+  "high_amount_threshold": {
+    "CRC": 50000,
+    "USD": 100
+  },
+  "max_date_range_days": 90,
+  "allowed_filters": ["comercio", "fecha_desde", "fecha_hasta", "categoria", "moneda"]
+}
