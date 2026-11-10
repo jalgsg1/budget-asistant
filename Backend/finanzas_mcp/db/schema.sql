@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     categoria   TEXT    NOT NULL,
     subtotal    REAL,                           -- optional
     iva         REAL,                           -- optional
+    descripcion TEXT,                           -- optional free-text from invoice
     created_at  TEXT    NOT NULL                -- ISO 8601 datetime
 );
 

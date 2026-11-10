@@ -82,9 +82,9 @@ class TransactionRepository:
         cursor = self._conn.execute(
             """
             INSERT INTO transactions
-                (user_id, comercio, fecha, total, moneda, categoria, subtotal, iva, created_at)
+                (user_id, comercio, fecha, total, moneda, categoria, subtotal, iva, descripcion, created_at)
             VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 tx.user_id,
@@ -95,6 +95,7 @@ class TransactionRepository:
                 tx.categoria,
                 tx.subtotal,
                 tx.iva,
+                tx.descripcion,
                 created_at,
             ),
         )
@@ -139,7 +140,7 @@ class TransactionRepository:
         rows = self._conn.execute(
             """
             SELECT id, user_id, comercio, fecha, total, moneda, categoria,
-                   subtotal, iva, created_at
+                   subtotal, iva, descripcion, created_at
             FROM   transactions
             WHERE  user_id  = ?
               AND  comercio = ?
@@ -210,7 +211,7 @@ class TransactionRepository:
         where_clause = " AND ".join(clauses)
         sql = f"""
             SELECT id, user_id, comercio, fecha, total, moneda, categoria,
-                   subtotal, iva, created_at
+                   subtotal, iva, descripcion, created_at
             FROM   transactions
             WHERE  {where_clause}
             ORDER  BY fecha DESC
@@ -255,5 +256,6 @@ def _row_to_transaction(row: sqlite3.Row) -> Transaction:
         categoria=row["categoria"],
         subtotal=row["subtotal"],
         iva=row["iva"],
+        descripcion=row["descripcion"],
         created_at=row["created_at"],
     )

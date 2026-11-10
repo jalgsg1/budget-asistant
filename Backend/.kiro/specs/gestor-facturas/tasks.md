@@ -22,23 +22,23 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
     - El repositorio no debe importar nada de `mcp`, `sys.stdin` o `sys.stdout`
     - _Requirements: 17.3_
 
-  - [ ]* 2.2 Escribir pruebas de propiedad para aislamiento de usuario (Property 14)
+  - [x] 2.2 Escribir pruebas de propiedad para aislamiento de usuario (Property 14)
     - **Property 14: User isolation invariant**
     - **Validates: Requirements 10.3**
     - Generar con Hypothesis conjuntos de transacciones de dos usuarios distintos; afirmar que `query` y `find_duplicates` nunca devuelven registros del otro usuario
 
-  - [ ]* 2.3 Escribir pruebas de propiedad para el límite de resultados de duplicados (Property 7)
+  - [x] 2.3 Escribir pruebas de propiedad para el límite de resultados de duplicados (Property 7)
     - **Property 7: Duplicate detection result bound**
     - **Validates: Requirements 6.2, 10.3**
     - Insertar un número arbitrario de registros coincidentes; afirmar que `find_duplicates` devuelve como máximo 10 elementos
 
-- [ ] 3. Modelos de datos compartidos
+- [x] 3. Modelos de datos compartidos
   - Implementar `finanzas_mcp/business/categorias.py` con `CLOSED_CATEGORY_LIST`
   - Definir los dataclasses `Transaction`, `ValidationResult`, `OcrResult` en módulos compartidos (`finanzas_mcp/models.py` o equivalente)
   - _Requirements: 7.1, 17.1_
 
-- [ ] 4. Lógica de negocio — validación
-  - [ ] 4.1 Implementar funciones de validación en `finanzas_mcp/business/validacion.py`
+- [x] 4. Lógica de negocio — validación
+  - [x] 4.1 Implementar funciones de validación en `finanzas_mcp/business/validacion.py`
     - `validar_campos_obligatorios`: verifica presencia y no-vacío de comercio, fecha, total, moneda, categoría (R1)
     - `validar_fecha`: formato ISO 8601 reconocido y fecha no futura (R2)
     - `validar_moneda`: solo CRC o USD (R3)
@@ -85,11 +85,11 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
     - Generar totales por encima del umbral sin `high_amount_token`; afirmar rechazo siempre
 
 - [ ] 5. Lógica de negocio — duplicados y transacciones
-  - [ ] 5.1 Implementar `finanzas_mcp/business/duplicados.py`
+  - [x] 5.1 Implementar `finanzas_mcp/business/duplicados.py`
     - `buscar_duplicados(repo, comercio, fecha, total, user_id, limit=10)`: delega a `repo.find_duplicates`; aplica `user_id` del contexto de sesión, nunca del payload del agente
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 10.3_
 
-  - [ ] 5.2 Implementar `finanzas_mcp/business/transacciones.py`
+  - [-] 5.2 Implementar `finanzas_mcp/business/transacciones.py`
     - `registrar_transaccion(repo, datos, token, high_amount_token, policy, user_id)`: ejecuta revalidación completa R1–R8 de forma independiente al agente; persiste solo si todo pasa; lanza excepción en caso de violación
     - `listar_transacciones(repo, filtros, user_id, filtros_permitidos, max_rango_dias)`: aplica lista blanca de filtros (R9), máximo rango de fechas, y aislamiento por `user_id`
     - _Requirements: 2.3, 3.4, 4.3, 5.4, 6.4, 6.5, 7.4, 8.3, 8.4, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4_
@@ -104,11 +104,11 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
     - **Validates: Requirements 10.2**
     - Generar rangos de fechas que exceden `max_date_range_days`; afirmar rechazo siempre
 
-- [ ] 6. Checkpoint — pruebas de lógica de negocio
+- [~] 6. Checkpoint — pruebas de lógica de negocio
   - Asegurarse de que todas las pruebas definidas hasta este punto pasan con `python -m unittest discover -s tests -v`. Consultar al usuario si surgen dudas.
 
 - [ ] 7. Servidor MCP `finanzas-mcp`
-  - [ ] 7.1 Implementar `finanzas_mcp/server.py`
+  - [~] 7.1 Implementar `finanzas_mcp/server.py`
     - Configurar stdin/stdout con `sys.stdin.reconfigure(encoding="utf-8")` y `sys.stdout.reconfigure(encoding="utf-8")`
     - Registrar las cuatro herramientas: `validar_factura`, `buscar_duplicados`, `listar_transacciones`, `registrar_transaccion`
     - Cada handler deserializa el payload, delega a la capa de negocio, serializa la respuesta
@@ -122,12 +122,12 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
     - _Requirements: 18.1_
 
 - [ ] 8. Servidor MCP `ocr-mcp`
-  - [ ] 8.1 Implementar `ocr_mcp/ocr_client.py`
+  - [~] 8.1 Implementar `ocr_mcp/ocr_client.py`
     - Clase `OcrClient` que envuelve la llamada al LLM con visión (OpenAI GPT-4o o equivalente)
     - Devuelve `OcrResult(text, confidence, is_untrusted=True, low_confidence_fields)`
     - _Requirements: 1.1, 1.5_
 
-  - [ ] 8.2 Implementar `ocr_mcp/server.py`
+  - [~] 8.2 Implementar `ocr_mcp/server.py`
     - Configurar UTF-8 en stdin/stdout
     - Registrar `ocr_imagen(ruta: str)`:
       - Normalizar y resolver `ruta`; rechazar si no está bajo `INVOICES_DIR` (R1.2, R1.4)
@@ -147,19 +147,19 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
     - **Validates: Requirements 1.1, 1.5**
     - Para cualquier ruta válida (con LLM mockeado), afirmar que `OcrResult.is_untrusted` siempre es `True`
 
-- [ ] 9. Trazador (`agent/tracer.py`)
+- [~] 9. Trazador (`agent/tracer.py`)
   - Implementar los dataclasses `TraceEntry` y `Trace` tal como se definen en el diseño
   - Implementar función `write_trace(trace: Trace, traces_dir: str) -> None` que escribe `traces/{timestamp}.json` con encoding UTF-8
   - Si la escritura falla, loguear el error a `sys.stderr` sin interrumpir la interacción del usuario
   - _Requirements: 14.1, 14.2, 14.3_
 
 - [ ] 10. Agente LangChain (`agent/agent.py`)
-  - [ ] 10.1 Implementar carga de política y gestión de límites
+  - [~] 10.1 Implementar carga de política y gestión de límites
     - Leer `politica.json` al arrancar; construir el conjunto de herramientas permitidas, requeridas de confirmación y denegadas
     - Implementar contador de pasos con `StepLimitError` (lanza al llegar a 8) y contador de tokens con `TokenLimitError`
     - _Requirements: 11.1, 11.2, 11.3, 12.3, 12.4_
 
-  - [ ] 10.2 Implementar el pipeline SKILL de seis pasos
+  - [~] 10.2 Implementar el pipeline SKILL de seis pasos
     - Paso 1 — Extraer: llamar `ocr_imagen`; marcar resultado como no confiable; reintentar una vez si confidence baja; pedir clarificación al usuario si sigue bajo (R1.7)
     - Paso 2 — Validar: llamar `validar_factura`; en campo faltante o moneda inválida pedir valor al usuario; en categoría ambigua presentar `CLOSED_CATEGORY_LIST` (R6, R7)
     - Paso 3 — Aritmética: si incoherencia, preguntar al usuario qué campo es correcto; actualizar datos; reintentar `validar_factura` (R4)
@@ -189,10 +189,10 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
     - **Validates: Requirements 6.1, 6.3**
     - Mockear `buscar_duplicados` devolviendo coincidencias; afirmar que `registrar_transaccion` no se invoca sin un paso de confirmación explícito registrado en la traza
 
-- [ ] 11. Checkpoint — pruebas del agente y MCP
+- [~] 11. Checkpoint — pruebas del agente y MCP
   - Asegurarse de que todas las pruebas pasan con `python -m unittest discover -s tests -v`. Consultar al usuario si surgen dudas.
 
-- [ ] 12. Interfaz de línea de comandos (`agent/main.py`)
+- [~] 12. Interfaz de línea de comandos (`agent/main.py`)
   - Implementar `main(image_path: str)` como punto de entrada CLI
   - Parsear argumento de ruta de imagen con `argparse`
   - Instanciar el agente con política y skill
@@ -201,39 +201,39 @@ Cada tarea produce código que se integra con el trabajo previo; no hay código 
   - _Requirements: 19.1, 19.2, 19.3_
 
 - [ ] 13. Pruebas unitarias de cobertura de reglas de negocio
-  - [ ] 13.1 Escribir pruebas unitarias para R1–R4 (validación de campos, fecha, moneda, aritmética)
+  - [~] 13.1 Escribir pruebas unitarias para R1–R4 (validación de campos, fecha, moneda, aritmética)
     - Al menos una prueba conforme y una no conforme por cada regla
     - Mockear todas las dependencias externas (LLM, MCP)
     - _Requirements: 18.1, 18.2, 18.3_
 
-  - [ ] 13.2 Escribir pruebas unitarias para R5–R8 (duplicados, categoría, confirmación)
+  - [~] 13.2 Escribir pruebas unitarias para R5–R8 (duplicados, categoría, confirmación)
     - Al menos una prueba conforme y una no conforme por cada regla
     - Probar flujo de revalidación de `registrar_transaccion` con datos que saltaron `validar_factura`
     - _Requirements: 18.1, 18.2, 18.3_
 
-  - [ ] 13.3 Escribir pruebas unitarias para R9–R11 (filtros, aislamiento, límites)
+  - [~] 13.3 Escribir pruebas unitarias para R9–R11 (filtros, aislamiento, límites)
     - Al menos una prueba conforme y una no conforme por cada regla
     - Probar que el trazador escribe correctamente y que los errores de escritura van a stderr
     - _Requirements: 18.1, 18.2, 18.3_
 
 - [ ] 14. Infraestructura de evaluación y análisis de seguridad
-  - [ ] 14.1 Crear estructura del conjunto de evaluación en `eval/`
+  - [~] 14.1 Crear estructura del conjunto de evaluación en `eval/`
     - Crear `eval/labels.csv` con las columnas: `imagen`, `comercio`, `fecha`, `total`, `moneda`, `categoria`, `tipo` (`clean`/`difficult`), `dificultad` (blurry/tilted/discount/duplicate/injection), `anotador_1_*`, `anotador_2_*`, `kappa_categoria`, `acuerdo_*`
     - Crear `eval/README.md` documentando la estructura del conjunto, criterios de etiquetado y procedimiento para calcular Cohen's kappa y acuerdo porcentual
     - Asegurarse de que el CSV contiene marcadores de posición para ≥45 facturas (18 limpias, 27 difíciles distribuidas según Req 15.2)
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5_
 
-  - [ ] 14.2 Crear plantilla de análisis de seguridad en `security/injection_analysis.md`
+  - [~] 14.2 Crear plantilla de análisis de seguridad en `security/injection_analysis.md`
     - Documentar los 5 escenarios de ataque de inyección definidos en el diseño: override `SYSTEM:`, instrucción en nombre de comercio, SQL injection en campo total, instrucción base64, instrucciones multi-línea en descripción de producto
     - Para cada escenario: descripción del ataque, texto de instrucción embebido, respuesta observada del sistema (a completar durante la ejecución real), resultado (bloqueado/exitoso)
     - _Requirements: 16.1, 16.2, 16.3, 16.4_
 
-- [ ] 15. Docker
+- [~] 15. Docker
   - Crear `Dockerfile` basado en `python:3.12-slim`; copiar el proyecto, instalar dependencias, configurar `VOLUME ["/app/data"]`, `ENV DB_PATH=/app/data/facturas.db`, `ENV INVOICES_DIR=/app/facturas`, `CMD ["python", "-m", "agent.main"]`
   - Crear `docker-compose.yml` que mapea el volumen `/app/data` a una carpeta del host y el directorio de facturas
   - _Requirements: 20.1, 20.2, 20.3_
 
-- [ ] 16. Checkpoint final — suite completa
+- [~] 16. Checkpoint final — suite completa
   - Ejecutar `python -m unittest discover -s tests -v` y verificar que todos los tests pasan sin dependencias de red externas
   - Confirmar que `politica.json`, `SKILL.md`, `Dockerfile` y `docker-compose.yml` existen y son coherentes con el diseño
   - Consultar al usuario si surgen dudas o si algún test falla de forma no determinista.

@@ -1,5 +1,14 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "2.2 Escribir pruebas de propiedad para aislamiento de usuario (Property 14)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794282503435
+    },
+    "2.3 Escribir pruebas de propiedad para el límite de resultados de duplicados (Property 7)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794283398559
+    }
+  },
   "executionHistory": {
     "1. Estructura del proyecto y artefactos de configuración": [
       {
@@ -30,6 +39,207 @@
         "executionId": "f1d60023-caac-47ab-a8e1-8d918bd09133",
         "chatSessionId": "sess_d2ddd982-5f53-4718-8ed9-7f0d7c961cc7",
         "timestamp": 1794281631115
+      }
+    ],
+    "2.2 Escribir pruebas de propiedad para aislamiento de usuario (Property 14)": [
+      {
+        "executionId": "6fa314e2-7fa9-4523-9751-817a34eddeaf",
+        "chatSessionId": "sess_ec1b9f73-19c8-4fef-81ec-45369c936724",
+        "timestamp": 1794282212197
+      },
+      {
+        "executionId": "6fa314e2-7fa9-4523-9751-817a34eddeaf",
+        "chatSessionId": "sess_ec1b9f73-19c8-4fef-81ec-45369c936724",
+        "timestamp": 1794282511351
+      }
+    ],
+    "2.3 Escribir pruebas de propiedad para el límite de resultados de duplicados (Property 7)": [
+      {
+        "executionId": "e158d13d-f539-419e-ac10-45f33dd549b7",
+        "chatSessionId": "sess_de0aa334-d54b-4d20-8491-1a87d4639625",
+        "timestamp": 1794282607881
+      },
+      {
+        "executionId": "e158d13d-f539-419e-ac10-45f33dd549b7",
+        "chatSessionId": "sess_de0aa334-d54b-4d20-8491-1a87d4639625",
+        "timestamp": 1794283406095
+      }
+    ],
+    "3. Modelos de datos compartidos": [
+      {
+        "executionId": "0ee846af-846a-4e43-a305-176822eca030",
+        "chatSessionId": "sess_da8bb829-2c8e-40f6-9b45-73413b22dc6a",
+        "timestamp": 1794283446114
+      },
+      {
+        "executionId": "0ee846af-846a-4e43-a305-176822eca030",
+        "chatSessionId": "sess_da8bb829-2c8e-40f6-9b45-73413b22dc6a",
+        "timestamp": 1794283596306
+      }
+    ],
+    "4.1 Implementar funciones de validación en `finanzas_mcp/business/validacion.py`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283617589
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283625124
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283939748
+      }
+    ],
+    "5.1 Implementar `finanzas_mcp/business/duplicados.py`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283617707
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283944340
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284001575
+      }
+    ],
+    "5.2 Implementar `finanzas_mcp/business/transacciones.py`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283617838
+      },
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794284008179
+      }
+    ],
+    "6. Checkpoint — pruebas de lógica de negocio": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283617927
+      }
+    ],
+    "7.1 Implementar `finanzas_mcp/server.py`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618015
+      }
+    ],
+    "8.1 Implementar `ocr_mcp/ocr_client.py`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618103
+      }
+    ],
+    "8.2 Implementar `ocr_mcp/server.py`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618186
+      }
+    ],
+    "9. Trazador (`agent/tracer.py`)": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618283
+      }
+    ],
+    "10.1 Implementar carga de política y gestión de límites": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618367
+      }
+    ],
+    "10.2 Implementar el pipeline SKILL de seis pasos": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618507
+      }
+    ],
+    "11. Checkpoint — pruebas del agente y MCP": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618679
+      }
+    ],
+    "12. Interfaz de línea de comandos (`agent/main.py`)": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618826
+      }
+    ],
+    "13.1 Escribir pruebas unitarias para R1–R4 (validación de campos, fecha, moneda, aritmética)": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283618989
+      }
+    ],
+    "13.2 Escribir pruebas unitarias para R5–R8 (duplicados, categoría, confirmación)": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283619193
+      }
+    ],
+    "13.3 Escribir pruebas unitarias para R9–R11 (filtros, aislamiento, límites)": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283619282
+      }
+    ],
+    "14.1 Crear estructura del conjunto de evaluación en `eval/`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283619417
+      }
+    ],
+    "14.2 Crear plantilla de análisis de seguridad en `security/injection_analysis.md`": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283619567
+      }
+    ],
+    "15. Docker": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283619679
+      }
+    ],
+    "16. Checkpoint final — suite completa": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283619800
+      }
+    ],
+    "4. Lógica de negocio — validación": [
+      {
+        "executionId": "59634715-4974-4aaa-a873-fb63e57c9497",
+        "chatSessionId": "sess_e71b6a93-3020-4d81-8747-cbe8e9b4c4d6",
+        "timestamp": 1794283939898
       }
     ]
   }
