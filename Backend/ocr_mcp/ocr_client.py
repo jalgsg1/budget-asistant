@@ -63,7 +63,8 @@ _REQUIRED_FIELDS: list[str] = ["comercio", "fecha", "total", "moneda"]
 _LOW_CONFIDENCE_THRESHOLD: float = 0.75
 
 
-_DEFAULT_MODELS = {"openai": "gpt-4o", "anthropic": "claude-3-5-sonnet-latest"}
+# claude-3-5-sonnet-latest fue retirado por Anthropic (la API responde 404 NotFoundError).
+_DEFAULT_MODELS = {"openai": "gpt-4o", "anthropic": "claude-sonnet-5-5"}
 _KEY_ENV = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
 
 
@@ -96,7 +97,9 @@ class OcrClient:
         OpenAI API key.  If not supplied, falls back to the ``OPENAI_API_KEY``
         environment variable (standard LangChain / OpenAI behaviour).
     temperature:
-        LLM temperature.  Defaults to 0 for maximum determinism.
+        LLM temperature.  If ``None`` (default), OpenAI uses 0 for maximum
+        determinism and Anthropic omits the parameter: recent Claude models
+        reject it with ``400 BadRequestError`` ("`temperature` is deprecated").
 
     Notes
     -----
@@ -109,7 +112,7 @@ class OcrClient:
         self,
         model: str | None = None,
         api_key: str | None = None,
-        temperature: float = 0,
+        temperature: float | None = None,
         provider: str | None = None,
     ) -> None:
         self._provider = resolve_provider(provider)
@@ -126,18 +129,19 @@ class OcrClient:
         if self._provider == "anthropic":
             from langchain_anthropic import ChatAnthropic  # import diferido
 
+            extra: dict = {} if temperature is None else {"temperature": temperature}
             self._llm = ChatAnthropic(
                 model=model,
-                temperature=temperature,
                 api_key=resolved_key,  # type: ignore[arg-type]
                 max_tokens=1024,
+                **extra,
             )
         else:
             from langchain_openai import ChatOpenAI  # import diferido
 
             self._llm = ChatOpenAI(
                 model=model,
-                temperature=temperature,
+                temperature=0 if temperature is None else temperature,
                 api_key=resolved_key,  # type: ignore[arg-type]
                 max_tokens=1024,
             )

@@ -54,10 +54,9 @@ Las facturas serían propias o del dataset, que dan su consentimiento. CORD (CC 
 
 ## 5. Pregunta de investigación
 
-**Nuestra pregunta:** ¿Mejora una Skill procedimental (extraer → validar campos obligatorios → verificar aritmética → detectar duplicados → confirmar → registrar) con validación en el servidor MCP la exactitud del registro de facturas y la resistencia a inyecciones indirectas, frente a OCR + LLM con un solo prompt, y a qué costo en tokens y tiempo?
+**Nuestra pregunta:** ¿Mejora una Skill procedimental (extraer → validar campos obligatorios → verificar aritmética → detectar duplicados → confirmar → registrar) con validación en el servidor MCP la exactitud del registro de facturas y la resistencia a inyecciones indirectas, frente a OCR + LLM con un solo prompt?
 
-**Línea base contra la que comparamos:** el mismo OCR y el mismo LLM con un prompt único que devuelve el JSON de la factura y lo guarda directamente, sin Skill ni herramientas de validación. Ambas condiciones se ejecutan sobre las mismas 45 facturas, con trazas de cada ejecución.
-
+**Condición B contra la que comparamos:** el mismo OCR y el mismo LLM con un prompt único que devuelve el JSON de la factura y lo guarda directamente, sin Skill ni herramientas de validación. Ambas condiciones se ejecutan sobre las mismas 45 facturas, con trazas de cada ejecución. Sin dejar de lado el costo en tokens y tiempo.
 
 ## 6. Cómo sabremos si funcionó
 

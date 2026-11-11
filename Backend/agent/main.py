@@ -39,6 +39,31 @@ _EXIT_CODES = {"success": 0, "validation_error": 1, "user_abort": 2,
                "step_limit": 3, "token_limit": 3}
 
 
+#: código de salida por uso incorrecto (falta la ruta de la imagen); EX_USAGE
+EXIT_USAGE = 64
+
+USAGE_DOCKER = (
+    "Error: falta la ruta de la imagen de la factura.\n"
+    "Uso con Docker:\n"
+    "  docker compose run --rm gestor-facturas python -m agent.main "
+    "/app/facturas/mi_factura.jpg"
+)
+
+
+def _resolve_image_path(image_path: Optional[str], stdin: Any, stdout: Any) -> Optional[str]:
+    """Devuelve la ruta dada; si falta y stdin es TTY la pregunta; si no, ``None``."""
+    if image_path:
+        return image_path
+    isatty = getattr(stdin, "isatty", None)
+    if not callable(isatty) or not isatty():
+        return None
+    answer = ConsoleIO(stdin, stdout).ask(
+        "Ruta de la imagen de la factura (ej. /app/facturas/mi_factura.jpg):"
+    )
+    answer = (answer or "").strip()
+    return answer or None
+
+
 def _force_utf8() -> None:
     for stream in (sys.stdin, sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
@@ -213,8 +238,16 @@ def main(image_path: Optional[str] = None, argv: Optional[Sequence[str]] = None)
             prog="python -m agent.main",
             description="Procesa una imagen de factura y la registra tras confirmación.",
         )
-        parser.add_argument("image_path", help="Ruta de la imagen de factura (dentro de INVOICES_DIR)")
+        parser.add_argument(
+            "image_path", nargs="?", default=None,
+            help="Ruta de la imagen de factura (dentro de INVOICES_DIR)",
+        )
         image_path = parser.parse_args(argv).image_path
+
+    image_path = _resolve_image_path(image_path, sys.stdin, sys.stdout)
+    if image_path is None:
+        print(USAGE_DOCKER, file=sys.stderr)
+        return EXIT_USAGE
 
     try:
         policy = load_policy(str(DEFAULT_POLICY_PATH))

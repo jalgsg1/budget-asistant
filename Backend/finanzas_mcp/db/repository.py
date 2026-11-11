@@ -20,6 +20,9 @@ from finanzas_mcp.models import Transaction
 # Absolute path to the SQL schema file (same directory as this module).
 _SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
+# Modos de journal admitidos en SQLITE_JOURNAL_MODE (lista cerrada: se interpola en el PRAGMA).
+_JOURNAL_MODES = {"WAL", "DELETE", "TRUNCATE", "PERSIST", "MEMORY"}
+
 
 class TransactionRepository:
     """Provides CRUD operations for the `transactions` table in a SQLite database.
@@ -42,7 +45,13 @@ class TransactionRepository:
 
         # Enforce foreign-key constraints and WAL mode for safer concurrent access.
         self._conn.execute("PRAGMA foreign_keys = ON")
-        self._conn.execute("PRAGMA journal_mode = WAL")
+        # WAL necesita memoria compartida (archivo -shm con mmap), que no funciona
+        # en algunos sistemas de archivos, p. ej. bind mounts de Docker Desktop en
+        # Windows ("disk I/O error"). SQLITE_JOURNAL_MODE permite usar DELETE ahí.
+        mode = os.environ.get("SQLITE_JOURNAL_MODE", "WAL").strip().upper()
+        if mode not in _JOURNAL_MODES:
+            mode = "WAL"
+        self._conn.execute(f"PRAGMA journal_mode = {mode}")
 
         self._init_schema()
 

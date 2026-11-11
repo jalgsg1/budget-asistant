@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.post(
     "/validar",
-    summary="Validar los datos de una factura",
+    summary="Test - Validar los datos de una factura, uso interno.",
     response_model=ValidacionRespuesta,
     responses={
         422: {"model": ErrorEstandar, "description": "Cuerpo de la solicitud inválido"},

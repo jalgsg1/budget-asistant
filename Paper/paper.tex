@@ -1,0 +1,210 @@
+% =====================================================================
+% Plantilla del artículo del proyecto final
+% Maestría en Inteligencia Artificial — Agentes, Skills y MCP
+%
+% Extensión: 6 a 8 páginas en este formato, SIN contar referencias ni apéndices.
+% Compilar:  pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
+% También compila sin cambios en Overleaf (subir paper.tex y referencias.bib).
+%
+% Cada sección trae un comentario con lo que se evalúa. Bórrenlos antes de entregar.
+% =====================================================================
+\documentclass[10pt,twocolumn,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+
+\lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, frame=single, columns=fullflexible}
+\newcommand{\todo}[1]{\textcolor{red}{[PENDIENTE: #1]}}
+
+\title{\todo{Título: qué se hizo y qué se encontró, no el nombre del sistema}}
+\author{
+  José Andrés Lizano-Gallegos \\
+  \small Maestría en Inteligencia Artificial\\
+  \small \texttt{jlizanog@ucenfotec.ac.cr}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+% ---------------------------------------------------------------------
+\begin{abstract}
+% 150 a 200 palabras. Cuatro movimientos, una o dos frases cada uno:
+% (1) problema y por qué importa, (2) qué proponen, (3) cómo lo evaluaron,
+% (4) resultado principal CON UNA CIFRA. Sin citas, sin siglas sin definir.
+\todo{Resumen en español.}
+\end{abstract}
+
+\noindent\textbf{Palabras clave:} \todo{4 a 6 palabras clave}
+
+\noindent\textbf{Abstract.} \todo{Traducción al inglés del resumen.}
+
+% ---------------------------------------------------------------------
+\section{Introducción}
+% Qué se evalúa: el problema está acotado a un usuario y un contexto concretos;
+% queda claro por qué un agente (y no un flujo fijo) es la aproximación adecuada;
+% las preguntas de investigación son explícitas y medibles; las contribuciones
+% están enumeradas y cada una se sostiene en una sección del artículo.
+\todo{Contexto y problema.}
+
+\todo{Por qué un agente: qué parte del proceso no puede decidirse de antemano.}
+
+Este trabajo responde las siguientes preguntas de investigación:
+\begin{itemize}
+  \item \textbf{PI1:} \todo{p. ej., ¿en qué medida una Skill procedimental mejora la exactitud frente a instrucciones genéricas?}
+  \item \textbf{PI2:} \todo{p. ej., ¿qué costo en tokens y latencia introduce?}
+  \item \textbf{PI3:} \todo{p. ej., ¿qué proporción de inyecciones indirectas logra alterar una acción?}
+\end{itemize}
+
+Las contribuciones son: \todo{(i) ..., (ii) ..., (iii) ...}
+
+% ---------------------------------------------------------------------
+\section{Trabajo relacionado}
+% Mínimo 8 referencias; al menos 5 revisadas por pares (congreso o revista).
+% No es un catálogo: agrupen por tema y digan en qué se parece y en qué se
+% distingue su trabajo de cada grupo. TODA referencia debe haber sido abierta
+% y leída por el equipo. Una cita inexistente o inventada anula esta sección.
+\subsection{Agentes basados en modelos de lenguaje}
+\todo{Razonamiento y acción intercalados \cite{yao2023react}, uso aprendido de herramientas \cite{schick2023toolformer}, autocorrección \cite{shinn2023reflexion}.}
+
+\subsection{Protocolos de herramientas y contexto}
+\todo{MCP \cite{mcp_spec} y alternativas; patrones de diseño de agentes \cite{anthropic2024effective}.}
+
+\subsection{Evaluación y seguridad de agentes}
+\todo{Bancos de pruebas de agentes \cite{liu2024agentbench,jimenez2024swebench}; inyección de prompts indirecta \cite{greshake2023injection}.}
+
+% ---------------------------------------------------------------------
+\section{Sistema propuesto}
+% Qué se evalúa: la arquitectura se entiende con una figura; cada decisión de
+% diseño está justificada (no solo descrita); la política de permisos y los
+% límites del bucle están explícitos.
+\subsection{Arquitectura}
+\todo{Figura \ref{fig:arquitectura} con host, clientes, servidores MCP, Skill y política.}
+
+\begin{figure}[t]
+  \centering
+  \fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}\todo{diagrama de arquitectura}\vspace{2cm}}}
+  \caption{Arquitectura del agente. \todo{Describir qué muestra la figura.}}
+  \label{fig:arquitectura}
+\end{figure}
+
+\subsection{Servidores MCP y herramientas}
+\todo{Tabla con cada herramienta: servidor, lectura o escritura, validaciones del lado del servidor.}
+
+\subsection{Skill y procedimiento}
+\todo{Qué conocimiento procedimental codifica la Skill y qué decide el código.}
+
+\subsection{Política de permisos y control del bucle}
+\todo{Herramientas permitidas, con confirmación, denegadas y ocultas; máximo de pasos; presupuesto.}
+
+% ---------------------------------------------------------------------
+\section{Metodología de evaluación}
+% Qué se evalúa: el conjunto de evaluación es propio, tiene al menos 40 casos
+% con al menos 30% difíciles, y fue etiquetado por dos personas con acuerdo
+% reportado. Hay una línea base real. Cada configuración se ejecuta al menos
+% 3 veces. Las métricas se definen ANTES de ver los resultados.
+\subsection{Conjunto de evaluación}
+\todo{Origen de los datos, cómo se anonimizaron, cuántos casos y de qué dificultad.}
+
+\todo{Etiquetado por dos anotadores; acuerdo con kappa de Cohen \cite{cohen1960kappa}: $\kappa = $ valor.}
+
+\subsection{Configuraciones comparadas}
+\todo{Línea base vs. propuesta. Qué variable cambia y cuáles se mantienen fijas.}
+
+\subsection{Métricas}
+\begin{itemize}
+  \item \textbf{Exactitud} o tasa de tarea completada: \todo{definición exacta}.
+  \item \textbf{Costo:} tokens de entrada y salida por ejecución.
+  \item \textbf{Latencia:} segundos por ejecución.
+  \item \textbf{Eficiencia:} pasos y llamadas a herramientas.
+  \item \textbf{Robustez:} proporción de ataques que alteran una acción o una cifra.
+\end{itemize}
+
+% ---------------------------------------------------------------------
+\section{Resultados}
+% Qué se evalúa: se reporta media y dispersión (no un solo número); las tablas
+% responden a las preguntas de investigación en orden; no se interpreta aquí,
+% se reporta. Toda cifra debe poder reproducirse desde las trazas entregadas.
+\begin{table}[t]
+  \centering
+  \caption{Resultados por configuración (media $\pm$ desviación, $n=$\todo{}).}
+  \label{tab:resultados}
+  \small
+  \begin{tabular}{lccc}
+    \toprule
+    Métrica & Línea base & Propuesta & $\Delta$ \\
+    \midrule
+    Exactitud (\%)        & \todo{} & \todo{} & \todo{} \\
+    Tokens por ejecución  & \todo{} & \todo{} & \todo{} \\
+    Latencia (s)          & \todo{} & \todo{} & \todo{} \\
+    Pasos                 & \todo{} & \todo{} & \todo{} \\
+    Ataques exitosos (\%) & \todo{} & \todo{} & \todo{} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{PI1}
+\todo{Resultado con referencia a la Tabla \ref{tab:resultados}.}
+\subsection{PI2}
+\todo{}
+\subsection{PI3}
+\todo{}
+
+\subsection{Análisis de errores}
+% Obligatorio. Clasifiquen los fallos (no los cuenten solamente) y muestren
+% dos o tres ejemplos concretos tomados de las trazas.
+\todo{Tipología de errores con ejemplos.}
+
+% ---------------------------------------------------------------------
+\section{Discusión}
+% Qué significan los resultados, qué sorprendió, y qué recomendaría el equipo
+% a alguien que construya un agente similar. Aquí sí se interpreta.
+\todo{}
+
+\section{Limitaciones y amenazas a la validez}
+% Obligatorio y honesto: tamaño del conjunto, sesgo del etiquetado, dependencia
+% del modelo y su versión, validez externa, qué no se probó.
+\todo{}
+
+\section{Consideraciones éticas}
+% Datos personales y su anonimización, consentimiento, riesgos del sistema si
+% se despliega, y quién es responsable de sus acciones.
+\todo{}
+
+\section{Conclusiones}
+\todo{Respuesta directa a cada pregunta de investigación y trabajo futuro.}
+
+% ---------------------------------------------------------------------
+\section*{Declaración de uso de IA}
+% Obligatoria. Qué herramientas de IA usaron para escribir, programar o analizar,
+% para qué, y cómo verificaron lo que produjeron. Usar IA está permitido;
+% no declararlo, no.
+\todo{}
+
+\section*{Disponibilidad del código y los datos}
+\todo{Enlace al repositorio y commit exacto usado para los resultados.}
+
+\bibliographystyle{plain}
+\bibliography{referencias}
+
+\appendix
+\section{Reproducibilidad}
+% Comandos exactos para regenerar la Tabla 1 desde cero; versión del modelo,
+% fecha de ejecución, semillas, y dónde están las trazas.
+\begin{lstlisting}
+# Ejemplo: regenerar la tabla de resultados
+python agente.py --config config_base.json      # x3
+python agente.py --config config_propuesta.json # x3
+python leer_traza.py trazas/*.jsonl --csv metricas.csv
+\end{lstlisting}
+
+\end{document}

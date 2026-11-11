@@ -43,6 +43,7 @@ Nota: con `mcp` 1.9.1 y pydantic 2.14.x la importación de `mcp` puede fallar (`
 
 ## Requisitos
 
+- Instalar docker 4.38.0 o superior
 - Python 3.10 o superior
 - Gestor de paquetes `pip`
 - Una clave de OpenAI (`OPENAI_API_KEY`) o de Anthropic (`ANTHROPIC_API_KEY`) para el OCR
@@ -75,11 +76,16 @@ pip install -r requirements.txt
 ```powershell
 $env:OPENAI_API_KEY = "tu-clave"      # OCR con OpenAI (o ANTHROPIC_API_KEY)
 $env:LLM_PROVIDER = "openai"          # openai | anthropic (opcional; se detecta por la clave)
-$env:OCR_MODEL = "gpt-4o"            # opcional; por defecto gpt-4o / claude-3-5-sonnet-latest
+$env:OCR_MODEL = "gpt-4o"            # opcional; por defecto gpt-4o / claude-sonnet-5-5
 $env:DB_PATH = "./data/facturas.db"   # base de datos SQLite
 $env:MCP_USER_ID = "usuario_prueba"   # usuario de la sesión
 $env:INVOICES_DIR = "./facturas"      # carpeta permitida para imágenes
+$env:SQLITE_JOURNAL_MODE = "DELETE"   # modo de journal de SQLite (ver nota)
 ```
+
+Nota sobre `SQLITE_JOURNAL_MODE`: si no se define, SQLite usa `WAL`, que crea los archivos auxiliares `facturas.db-wal` y `facturas.db-shm`. El modo queda guardado en el propio archivo de la base. WAL no funciona sobre el volumen `./data` de Docker Desktop en Windows y macOS (`sqlite3.OperationalError: disk I/O error`), por eso el compose usa `DELETE`. Si comparte `./data/facturas.db` entre la ejecución local y Docker, use también `DELETE` en local. Si no, la base vuelve a WAL y el contenedor deja de abrirla. Valores admitidos: `WAL`, `DELETE`, `TRUNCATE`, `PERSIST`, `MEMORY`; cualquier otro valor se trata como `WAL`.
+
+Estas líneas `$env:` solo aplican a la sesión actual de PowerShell. No las copie al archivo `.env`, que usa otro formato (ver sección 6).
 
 ### 3. Ejecutar las pruebas
 
@@ -104,18 +110,62 @@ npx @modelcontextprotocol/inspector python -m finanzas_mcp.server
 ### 5. Ejecutar el agente
 
 ```powershell
-python -m agent.main .\facturas\mi_factura.jpg
+python -m agent.main .\facturas\batch1-0059.jpg
 ```
 
-Los prompts de confirmación se muestran en pantalla y las respuestas se leen del teclado. Al final se imprime el resultado y la razón de parada. Las trazas se guardan en `traces/`. Códigos de salida: 0 éxito, 1 error de validación o arranque, 2 cancelado por el usuario, 3 límite de pasos o tokens.
+Los prompts de confirmación se muestran en pantalla y las respuestas se leen del teclado. Al final se imprime el resultado y la razón de parada. Las trazas se guardan en `traces/`.
+
+Si se ejecuta sin ruta (`python -m agent.main`), el agente la pide por teclado cuando hay una terminal interactiva. Si no hay terminal, o si la respuesta queda vacía, imprime el uso con Docker y termina con código 64, sin iniciar los servidores MCP.
+
+Códigos de salida:
+
+| Código | Significado |
+|---|---|
+| 0 | Éxito. |
+| 1 | Error de validación o de arranque. |
+| 2 | Cancelado por el usuario. |
+| 3 | Límite de pasos o de tokens. |
+| 64 | Falta la ruta de la imagen. |
 
 ### 6. Docker
 
 ```powershell
-docker compose up --build
+docker compose --profile api up --build api-pruebas
 ```
 
-El compose monta `./data` (base de datos) en `/app/data` y `./facturas` en `/app/facturas`, y define `DB_PATH` e `INVOICES_DIR`. Las claves se leen de un archivo `.env`.
+El compose monta `./data` (base de datos) en `/app/data`, `./facturas` en `/app/facturas` y `./traces` en `/app/traces`. Fija dentro del contenedor `DB_PATH`, `INVOICES_DIR`, `TRACES_DIR` y `SQLITE_JOURNAL_MODE=DELETE`; estos valores prevalecen sobre los del `.env`. Las demás variables (claves del LLM, `LLM_PROVIDER`, `OCR_MODEL`, `MCP_USER_ID`, `API_TEST_MODE`) se leen del archivo `.env`.
+
+El `.env` usa formato dotenv: una variable por línea, `NOMBRE=valor`, sin prefijo `$env:`, sin espacios alrededor de `=` y con los comentarios en líneas propias que empiezan con `#`. Ejemplo:
+
+```dotenv
+# Proveedor y clave del LLM
+LLM_PROVIDER=openai
+OPENAI_API_KEY=tu-clave
+MCP_USER_ID=usuario_prueba
+SQLITE_JOURNAL_MODE=DELETE
+```
+
+Si el `.env` tiene sintaxis de PowerShell, Compose falla con `unexpected character "$" in variable name`.
+
+#### Solución de problemas
+
+Si `http://127.0.0.1:8000/docs` responde `ERR_CONNECTION_REFUSED`, el servicio `api-pruebas` no está corriendo. Está en el perfil `api`, así que un `docker compose up` sin `--profile api` no lo levanta. Revise el estado y los logs:
+
+```powershell
+docker compose --profile api ps -a
+docker compose --profile api logs --tail 50 api-pruebas
+```
+
+Si `GET /transacciones` (o cualquier acceso a la base) responde `INTERNAL_ERROR` y los logs muestran `disk I/O error`, la base quedó en modo WAL. Detenga los contenedores, cierre cualquier programa que tenga abierta la base y mueva los tres archivos a un respaldo. La base se vuelve a crear vacía al arrancar, así que haga esto solo si la base no tiene datos que necesite:
+
+```powershell
+docker compose --profile api stop
+New-Item -ItemType Directory data\respaldo_wal -Force
+Move-Item data\facturas.db* data\respaldo_wal\
+docker compose --profile api up -d --build api-pruebas
+```
+
+Si la base sí tiene datos, conviértala en lugar de moverla: `python -c "import sqlite3; c=sqlite3.connect('data/facturas.db'); print(c.execute('PRAGMA journal_mode=DELETE').fetchone())"`. El comando debe imprimir `('delete',)`.
 
 Servicios del compose (los de los perfiles no arrancan con un `up` normal):
 
@@ -134,7 +184,7 @@ Inicio rápido con Docker: cree `.env` con la clave del LLM (y opcionalmente `MC
 |---|---|
 | `LLM_PROVIDER` | `openai` o `anthropic`. Si falta, usa Anthropic solo cuando existe `ANTHROPIC_API_KEY` y no `OPENAI_API_KEY`; si no, OpenAI. |
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Clave del proveedor elegido. |
-| `OCR_MODEL` | Modelo con visión. Por defecto `gpt-4o` (OpenAI) o `claude-3-5-sonnet-latest` (Anthropic). |
+| `OCR_MODEL` | Modelo con visión. Por defecto `gpt-4o` (OpenAI) o `claude-sonnet-5-5` (Anthropic). Si el proveedor retira un modelo, la API responde `[OCR_FAILURE] ... (NotFoundError)`; use un modelo vigente. |
 
 ## API de pruebas (`api_pruebas`)
 
@@ -158,6 +208,7 @@ El host por defecto es `127.0.0.1`. Si se usa otro host, el lanzador imprime una
 |---|---|
 | `MCP_USER_ID` | Obligatoria. Usuario con el que se ejecuta todo. Si falta o está vacía, la API no arranca. |
 | `DB_PATH` | Base SQLite. Por defecto `./data/facturas.db`. |
+| `SQLITE_JOURNAL_MODE` | Modo de journal de SQLite. Por defecto `WAL`; use `DELETE` si comparte la base con Docker. |
 | `INVOICES_DIR` | Carpeta permitida para imágenes. Por defecto `./facturas`. |
 | `TRACES_DIR` | Carpeta de trazas. Por defecto `traces`. |
 | `API_TEST_MODE` | `true` habilita `/test/*` y `auto_confirmar`. Por defecto apagado. |

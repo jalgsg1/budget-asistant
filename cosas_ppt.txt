@@ -1,0 +1,10 @@
+
+Problema y usuario
+	Usuario concreto, situación concreta, costo actual estimado
+
+Pregunta y línea base
+	Pregunta comparativa y medible con línea base real
+
+Viabilidad
+	Datos disponibles, riesgos identificados con plan B
+

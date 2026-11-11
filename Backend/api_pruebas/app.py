@@ -15,7 +15,7 @@ from fastapi import FastAPI
 
 from api_pruebas import errores
 from api_pruebas.config import Config, cargar_config
-from api_pruebas.rutas import batch, factura, ocr, pipeline, pruebas, transacciones, trazas
+from api_pruebas.rutas import batch, factura, ocr, pipeline, transacciones, trazas
 from api_pruebas.servicios import ExtractorOcr, ServiciosNegocio
 
 logger = logging.getLogger("api_pruebas")
@@ -67,7 +67,7 @@ def crear_app(
         lifespan=lifespan,
     )
     errores.registrar_handlers(app)
-    for modulo in (ocr, factura, transacciones, pipeline, batch, trazas, pruebas):
+    for modulo in (ocr, factura, transacciones, pipeline, batch, trazas):
         app.include_router(modulo.router)
 
     if config is not None:

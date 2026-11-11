@@ -9,6 +9,8 @@
     INVOICES_DIR: /app/facturas
     TRACES_DIR: /app/traces
     MCP_USER_ID: ${MCP_USER_ID:-default_user}
+    # WAL no funciona sobre el bind mount ./data en Docker Desktop (Windows/macOS)
+    SQLITE_JOURNAL_MODE: DELETE
   volumes:
     # SQLite persiste en el host entre reinicios
     - ./data:/app/data

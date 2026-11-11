@@ -3,8 +3,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from fastapi import APIRouter, File, Form, Request, UploadFile
 
 from api_pruebas.errores import ErrorEstandar, error_api
@@ -27,8 +25,11 @@ router = APIRouter()
 )
 def ocr(
     request: Request,
-    ruta: Optional[str] = Form(None, description="Ruta relativa dentro de INVOICES_DIR"),
-    archivo: Optional[UploadFile] = File(None, description="Imagen o PDF a subir"),
+    # Tipos sin Optional a propósito: Optional[...] genera ``anyOf [string, null]``
+    # en el OpenAPI y Swagger UI no lo soporta en multipart (rellena ``ruta`` con
+    # "string" y la envía junto al archivo -> 422). Ambos siguen siendo opcionales.
+    ruta: str = Form("", description="Ruta relativa dentro de INVOICES_DIR"),
+    archivo: UploadFile = File(None, description="Imagen o PDF a subir"),
 ) -> OcrRespuesta:
     config = request.app.state.config
     servicios = request.app.state.servicios
