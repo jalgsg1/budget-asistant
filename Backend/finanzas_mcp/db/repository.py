@@ -220,6 +220,14 @@ class TransactionRepository:
         rows = self._conn.execute(sql, params).fetchall()
         return [_row_to_transaction(row) for row in rows]
 
+    def eliminar_por_usuario(self, user_id: str) -> int:
+        """Delete every transaction belonging to *user_id* and return the row count."""
+        cursor = self._conn.execute(
+            "DELETE FROM transactions WHERE user_id = ?", (user_id,)
+        )
+        self._conn.commit()
+        return cursor.rowcount
+
     # ------------------------------------------------------------------
     # Resource management
     # ------------------------------------------------------------------

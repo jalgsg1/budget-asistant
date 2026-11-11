@@ -19,8 +19,8 @@ Fotos tomadas por el equipo de facturas y tiquetes propios (supermercado, gasoli
 
 ¿Cuántos casos esperan tener? 
 Se esperan al menos 45 facturas:
-- 18 limpias (40 %)
-- 27 difíciles (60 %): 6 borrosas, 5 inclinadas, 5 con varios descuentos, 5 duplicadas y 6 con textos maliciosos. 
+- 31 limpias (70 %)
+- 14 difíciles (60 %): 12 inclinadas y arrugadas, 1 contexto malicioso y 2 invalidas con textos maliciosos. 
 
 + Dos personas etiquetan cada una por separado (comercio, fecha, total, moneda, categoría); se reporta κ de Cohen para categoría y % de acuerdo para los demás campos.
 

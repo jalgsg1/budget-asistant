@@ -73,7 +73,8 @@ from finanzas_mcp.business.validacion import (
     validar_moneda,
 )
 from finanzas_mcp.db.repository import TransactionRepository
-from finanzas_mcp.models import Transaction
+from finanzas_mcp.business.factura import evaluar_factura
+from finanzas_mcp.models import Transaction, ValidationResult
 
 # ---------------------------------------------------------------------------
 # Configuración de runtime
@@ -368,56 +369,14 @@ async def _handle_validar_factura(args: dict) -> list[types.TextContent]:
 
     No persiste nada.  Devuelve un resultado de validación agregado.
     """
-    errors: list[str] = []
-    first_error_code: str | None = None
+    resultado = evaluar_factura(args)
 
-    # R1 — Campos obligatorios
-    r1 = validar_campos_obligatorios(args)
-    if not r1.is_valid:
-        errors.extend(r1.errors)
-        first_error_code = first_error_code or r1.error_code
-
-    # R2 — Fecha (solo si está presente para evitar error de tipo)
-    fecha = args.get("fecha")
-    if fecha is not None:
-        r2 = validar_fecha(str(fecha))
-        if not r2.is_valid:
-            errors.extend(r2.errors)
-            first_error_code = first_error_code or r2.error_code
-
-    # R3 — Moneda
-    moneda = args.get("moneda")
-    if moneda is not None:
-        r3 = validar_moneda(str(moneda))
-        if not r3.is_valid:
-            errors.extend(r3.errors)
-            first_error_code = first_error_code or r3.error_code
-
-    # R4 — Coherencia aritmética (solo cuando subtotal e IVA están presentes)
-    subtotal = args.get("subtotal")
-    iva = args.get("iva")
-    total = args.get("total")
-    if subtotal is not None and iva is not None and total is not None:
-        r4 = validar_aritmetica(float(subtotal), float(iva), float(total))
-        if not r4.is_valid:
-            errors.extend(r4.errors)
-            first_error_code = first_error_code or r4.error_code
-
-    # R6 — Categoría
-    categoria = args.get("categoria")
-    if categoria is not None:
-        r6 = validar_categoria(str(categoria), CLOSED_CATEGORY_LIST)
-        if not r6.is_valid:
-            errors.extend(r6.errors)
-            first_error_code = first_error_code or r6.error_code
-
-    if errors:
+    if not resultado.valid:
         raise ValidationError(
-            __import__("finanzas_mcp.models", fromlist=["ValidationResult"])
-            .ValidationResult(
+            ValidationResult(
                 is_valid=False,
-                errors=errors,
-                error_code=first_error_code or "VALIDATION_ERROR",
+                errors=resultado.errors,
+                error_code=resultado.first_error_code or "VALIDATION_ERROR",
             )
         )
 

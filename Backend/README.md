@@ -1,4 +1,4 @@
-# gestor-facturas
+﻿# gestor-facturas
 
 Asistente personal de finanzas basado en agente. Permite fotografiar facturas físicas o digitales y registrarlas en una base de datos SQLite local, usando la línea de comandos (CLI).
 
@@ -17,7 +17,8 @@ El agente ejecuta un pipeline de seis pasos por factura:
 
 El servidor MCP `finanzas-mcp` es un guardián de escritura independiente. Revalida todos los datos y no confía en el agente. El texto extraído por OCR se trata siempre como dato no confiable, como defensa contra inyecciones indirectas en las imágenes.
 
-Fuera de alcance: ingresos, gastos fijos, app móvil e interfaces gráficas. Se procesa una imagen por factura.
+** Trabajo futuro
+Ingresos, gastos fijos, app móvil e interfaz gráfica. Se procesa una imagen por factura.
 
 ## Arquitectura
 
@@ -29,15 +30,17 @@ Fuera de alcance: ingresos, gastos fijos, app móvil e interfaces gráficas. Se 
 | Servidor ocr-mcp | `ocr_mcp/` | Herramienta `ocr_imagen` con confinamiento de rutas y cliente OpenAI/Anthropic. |
 | Agente | `agent/` | Pipeline SKILL (`agent.py`), CLI (`main.py`), trazador y `SKILL.md`. |
 | Política | `politica.json` | Herramientas permitidas, límites de pasos y tokens, umbrales. |
+| API de pruebas | `api_pruebas/` | API HTTP (FastAPI) para probar OCR, validación, listado, Pipeline y Batch sin la CLI. Ver sección más abajo. |
 | Evaluación y seguridad | eval/, security/ | Conjunto etiquetado de 45 facturas y plantilla de análisis de inyección. |
 
 ## Estado actual
 
-Implementado: capa SQLite, modelos, validaciones, duplicados, transacciones, servidores `finanzas-mcp` y `ocr-mcp`, cliente OCR (OpenAI o Anthropic), trazador, política, pipeline SKILL de seis pasos, CLI (`agent/main.py`), pruebas unitarias R1 a R11, estructura del conjunto de evaluación (`eval/`), plantilla de análisis de seguridad (`security/`) y Docker.
+Implementado: capa SQLite, modelos, validaciones, duplicados, transacciones, servidores `finanzas-mcp` y `ocr-mcp`, cliente OCR (OpenAI o Anthropic), trazador, política, pipeline SKILL de seis pasos, CLI (`agent/main.py`), pruebas unitarias R1 a R11, estructura del conjunto de evaluación (`eval/`), plantilla de análisis de seguridad (`security/`), Docker y API de pruebas HTTP (`api_pruebas/`) con procesamiento por lotes (Batch).
 
 Pendiente: pruebas de propiedad opcionales (Hypothesis) de varias secciones, etiquetado real del conjunto de evaluación y ejecución del análisis de inyección. Ver `.kiro/specs/gestor-facturas/tasks.md`.
 
 Nota: con `mcp` 1.9.1 y pydantic 2.14.x la importación de `mcp` puede fallar (`eval_type_backport`). Si ocurre, fije una versión de pydantic compatible.
+
 ## Requisitos
 
 - Python 3.10 o superior
@@ -114,6 +117,17 @@ docker compose up --build
 
 El compose monta `./data` (base de datos) en `/app/data` y `./facturas` en `/app/facturas`, y define `DB_PATH` e `INVOICES_DIR`. Las claves se leen de un archivo `.env`.
 
+Servicios del compose (los de los perfiles no arrancan con un `up` normal):
+
+| Servicio | Perfil | Comando |
+|---|---|---|
+| `gestor-facturas` | (ninguno) | `docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg` |
+| `finanzas-mcp` | `mcp` | `docker compose --profile mcp up finanzas-mcp` |
+| `ocr-mcp` | `mcp` | `docker compose --profile mcp up ocr-mcp` |
+| `api-pruebas` | `api` | `docker compose --profile api up --build api-pruebas` y abrir `http://127.0.0.1:8000/docs` |
+
+Inicio rápido con Docker: cree `.env` con la clave del LLM (y opcionalmente `MCP_USER_ID`, `API_TEST_MODE`), ponga las imágenes en `facturas/` y ejecute el servicio que necesite. Los servidores MCP hablan por stdio: el contenedor queda esperando en stdin, por lo que normalmente un cliente MCP los lanza con `docker compose run --rm -T finanzas-mcp`. La API de pruebas publica el puerto solo en `127.0.0.1`. Los tres comparten `./data`, `./facturas` y `./traces`.
+
 ## Proveedor de LLM
 
 | Variable | Descripción |
@@ -121,3 +135,99 @@ El compose monta `./data` (base de datos) en `/app/data` y `./facturas` en `/app
 | `LLM_PROVIDER` | `openai` o `anthropic`. Si falta, usa Anthropic solo cuando existe `ANTHROPIC_API_KEY` y no `OPENAI_API_KEY`; si no, OpenAI. |
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Clave del proveedor elegido. |
 | `OCR_MODEL` | Modelo con visión. Por defecto `gpt-4o` (OpenAI) o `claude-3-5-sonnet-latest` (Anthropic). |
+
+## API de pruebas (`api_pruebas`)
+
+Capa HTTP (FastAPI) sobre los mismos servicios de negocio, pensada para probar el pipeline sin usar la CLI. Todas las operaciones se ejecutan con el usuario de `MCP_USER_ID`; ningún request acepta `user_id`.
+
+### Cómo levantarla
+
+Desde esta carpeta (`Backend`):
+
+```powershell
+python -m api_pruebas                          # 127.0.0.1:8000 por defecto
+python -m api_pruebas --host 127.0.0.1 --port 8000
+uvicorn api_pruebas.app:app                    # alternativa directa
+```
+
+El host por defecto es `127.0.0.1`. Si se usa otro host, el lanzador imprime una advertencia de red. La documentación interactiva (Swagger) queda en `http://127.0.0.1:8000/docs`.
+
+### Variables de entorno
+
+| Variable | Descripción |
+|---|---|
+| `MCP_USER_ID` | Obligatoria. Usuario con el que se ejecuta todo. Si falta o está vacía, la API no arranca. |
+| `DB_PATH` | Base SQLite. Por defecto `./data/facturas.db`. |
+| `INVOICES_DIR` | Carpeta permitida para imágenes. Por defecto `./facturas`. |
+| `TRACES_DIR` | Carpeta de trazas. Por defecto `traces`. |
+| `API_TEST_MODE` | `true` habilita `/test/*` y `auto_confirmar`. Por defecto apagado. |
+| `API_TEST_DB_ALLOWLIST` | Bases o carpetas permitidas para `/test/*`, separadas por `;` o por el separador de rutas del sistema. Si se define, es la única regla. Si no, el nombre del archivo de la base debe contener `test` o `prueba`. |
+| `OCR_MODEL` | Modelo con visión para el OCR (ver Proveedor de LLM). |
+| `MAX_IMAGE_BYTES` | Tamaño máximo de imagen subida a `/ocr`. Por defecto 10 MiB. |
+| `BATCH_MAX_IMAGES` | Máximo de imágenes por Batch, entre 1 y 100. Por defecto 100. |
+| `BATCH_TRACES_DIR` | Carpeta de resultados de Batch. Por defecto `<TRACES_DIR>/batch`. |
+
+### Endpoints
+
+| Método y ruta | Función |
+|---|---|
+| `POST /ocr` | Extrae datos de una imagen subida. El resultado se marca como contenido no confiable. |
+| `POST /validar` | Valida los datos de una factura. |
+| `GET /transacciones` | Lista las transacciones del usuario. |
+| `POST /pipeline/run` | Ejecuta el pipeline sobre una imagen (`ruta`, `respuestas`). |
+| `POST /batch/run` | Procesa todas las imágenes de una subcarpeta de `INVOICES_DIR`. |
+| `GET /batch` | Lista los Batches del usuario, del más reciente al más antiguo. |
+| `GET /batch/{batch_id}` | Reporte de un Batch. |
+| `GET /trazas` | Lista las trazas del usuario (incluye las de Batch). |
+| `GET /trazas/{trace_id}` | Traza completa, con datos sensibles redactados. |
+| `POST /test/reset` | Elimina las transacciones del usuario. Solo modo de pruebas. |
+| `POST /test/seed` | Inserta transacciones de prueba. Solo modo de pruebas. |
+
+No existen `/health`, `/config`, `/duplicados` ni `POST /transacciones`. Los endpoints `/test/*` responden 403 si `API_TEST_MODE` no es `true` (`TEST_MODE_DISABLED`) o si la base no está permitida (`TEST_DB_NOT_ALLOWED`).
+
+### Batch
+
+`POST /batch/run` recibe un `BatchIn`:
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `subcarpeta` | texto | Obligatorio. Ruta relativa dentro de `INVOICES_DIR`. Se rechazan rutas absolutas, `..`, unidades, enlaces simbólicos y nombres reservados de Windows. |
+| `respuestas_por_defecto` | lista de textos | Respuestas guionadas a los prompts, para toda imagen sin entrada propia. Máximo 50. |
+| `respuestas_por_imagen` | objeto | Nombre de imagen a lista de respuestas. Cada clave debe ser una imagen de la subcarpeta. Máximo 100 claves. |
+| `auto_confirmar` | booleano | Responde solo los tokens de confirmación cuando se agota el guion. Requiere `API_TEST_MODE=true`; si no, responde 403 `TEST_MODE_DISABLED`. Por defecto `false`. |
+| `confirmar_duplicados` | booleano | Con `auto_confirmar`, responde `si` a la confirmación de posibles duplicados. Por defecto `false`. |
+
+Solo se procesan las imágenes directas de la subcarpeta (sin recursión), en orden alfabético. Cada imagen recibe una clasificación:
+
+| Clasificación | Significado |
+|---|---|
+| `ok` | Registrada. |
+| `duplicada` | Coincide con una transacción existente (`DUPLICATE_DB`) o con una imagen anterior del mismo Batch (`DUPLICATE_IN_BATCH`, con `duplicada_de`). |
+| `no_valida` | Falló la validación (con `reglas_incumplidas`) o la ruta o imagen no es válida. |
+| `step_limit` | Se alcanzó el límite de pasos. |
+| `token_limit` | Se alcanzó el límite de tokens. |
+| `user_rejection` | No hubo confirmación del usuario. |
+| `error` | Falla de una herramienta o error inesperado. |
+
+Una imagen con error no detiene el Batch. Los errores de entrada (`BATCH_PATH_VIOLATION`, `BATCH_FOLDER_NOT_FOUND`, `BATCH_NO_IMAGES`, `BATCH_TOO_MANY_IMAGES`, `BATCH_UNKNOWN_IMAGE`) se detectan antes de procesar nada.
+
+Ejemplos con las facturas de `facturas/test_batch_1`:
+
+```bash
+# Con auto_confirmar (requiere API_TEST_MODE=true)
+curl -X POST http://127.0.0.1:8000/batch/run \
+  -H "Content-Type: application/json" \
+  -d '{"subcarpeta": "test_batch_1"}'
+
+curl http://127.0.0.1:8000/batch
+curl http://127.0.0.1:8000/batch/<batch_id>
+```
+
+Sin `auto_confirmar` ni respuestas guionadas, el pipeline no recibe confirmación y las imágenes válidas terminan como `user_rejection`. Para registrar, agregue `"auto_confirmar": true` o envíe `respuestas_por_defecto`.
+
+Ubicación de resultados: `traces/batch/<batch_id>/summary.json` (reporte del Batch) y una traza JSON por imagen en la misma carpeta. Las trazas también se consultan con `GET /trazas` y `GET /trazas/{trace_id}`.
+
+Limitaciones conocidas:
+
+- Un Batch interrumpido (por ejemplo, al caer el proceso) puede quedar sin `summary.json`. En ese caso no aparece en `GET /batch` ni en `GET /batch/{batch_id}`, aunque sus trazas existan.
+- Los Batches concurrentes comparten la misma base SQLite, por lo que la detección de duplicados entre ellos depende del orden de ejecución.

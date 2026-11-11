@@ -1,0 +1,537 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Crear `ocr_mcp/ocr_core.py` y reutilizarlo desde `ocr_mcp/server.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352252050
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352263968
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352685088
+      }
+    ],
+    "1.2 Crear `finanzas_mcp/business/factura.py` con `evaluar_factura` y delegar desde `finanzas_mcp/server.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352252287
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352264567
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352685692
+      }
+    ],
+    "1.3 Agregar `TransactionRepository.eliminar_por_usuario(user_id) -> int`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352252890
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352265466
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352686417
+      }
+    ],
+    "2. Checkpoint - Verificar el refactor": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352252994
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352874541
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353017963
+      }
+    ],
+    "3.1 Instalar y fijar `fastapi`, `uvicorn` y `python-multipart` en `requirements.txt`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253127
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352266077
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352687213
+      }
+    ],
+    "4.1 Crear `api_pruebas/__init__.py` y `api_pruebas/config.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253244
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352691001
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352862992
+      }
+    ],
+    "4.2 Crear `api_pruebas/errores.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253344
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352691708
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352863838
+      }
+    ],
+    "4.5 Crear `api_pruebas/esquemas.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253452
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352691851
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352864565
+      }
+    ],
+    "5.1 Crear `api_pruebas/servicios.py` con `ServiciosNegocio`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253589
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353025589
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353093220
+      }
+    ],
+    "5.2 Crear `api_pruebas/trazas.py` (trazas en el directorio principal)": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253759
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353025452
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353094030
+      }
+    ],
+    "5.3 Crear `api_pruebas/modo_pruebas.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352253916
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353026086
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353095056
+      }
+    ],
+    "6.1 Crear `api_pruebas/herramientas.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254027
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353095747
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353279843
+      }
+    ],
+    "6.2 Crear `api_pruebas/pipeline_runner.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254156
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353280631
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353389396
+      }
+    ],
+    "7. Checkpoint - Verificar el núcleo de la API": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254266
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353390149
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353488117
+      }
+    ],
+    "8.1 Implementar en `api_pruebas/batch.py` la resolución de subcarpeta y la selección de imágenes": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254379
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353488952
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353942179
+      }
+    ],
+    "8.2 Implementar `AutoConfirmIO` en `api_pruebas/batch.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254486
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353943798
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354151978
+      }
+    ],
+    "8.3 Implementar `clasificar` y `clasificar_excepcion` en `api_pruebas/batch.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254596
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354152766
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354228687
+      }
+    ],
+    "8.4 Implementar `ejecutar_batch`, el reporte y la consulta de reportes en `api_pruebas/batch.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254696
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354228031
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354334277
+      }
+    ],
+    "8.5 Extender `api_pruebas/trazas.py` para localizar trazas en `traces/batch/<batch_id>/`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254801
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353493948
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353943144
+      }
+    ],
+    "9. Checkpoint - Verificar el módulo de Batch": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352254941
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354334939
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354439133
+      }
+    ],
+    "10.1 Crear `api_pruebas/rutas/__init__.py`, `rutas/ocr.py` y `rutas/factura.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255102
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354439980
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354566702
+      }
+    ],
+    "10.2 Crear `rutas/transacciones.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255314
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354442122
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354567710
+      }
+    ],
+    "10.3 Crear `rutas/pipeline.py`, `rutas/trazas.py` y `rutas/pruebas.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255459
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354442369
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354568864
+      }
+    ],
+    "10.4 Crear `rutas/batch.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255575
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354442885
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354570017
+      }
+    ],
+    "10.5 Crear `api_pruebas/app.py` y `api_pruebas/__main__.py`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255690
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354570700
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354626840
+      }
+    ],
+    "11. Checkpoint - Verificar la API completa": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255842
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354627763
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354842686
+      }
+    ],
+    "12.1 Actualizar `Backend/README.md`": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352255990
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354628476
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354843521
+      }
+    ],
+    "13. Checkpoint final - Verificar todo": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352256142
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354844370
+      },
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354980668
+      }
+    ],
+    "1. Refactor mínimo de código existente (sin cambiar comportamiento)": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352686529
+      }
+    ],
+    "3. Dependencias de la API": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352687318
+      }
+    ],
+    "4. Paquete `api_pruebas`: configuración interna, errores y esquemas": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794352864790
+      }
+    ],
+    "5. Servicios de negocio y módulos de apoyo": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353095176
+      }
+    ],
+    "6. Adaptador de herramientas y ejecución del Pipeline": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794353389534
+      }
+    ],
+    "8. Módulo de Batch (`api_pruebas/batch.py`) y extensión de trazas": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354334365
+      }
+    ],
+    "10. Routers FastAPI, aplicación y lanzador": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354627036
+      }
+    ],
+    "12. Documentación": [
+      {
+        "executionId": "b4a1befe-d946-45d9-8953-b2a3026c6592",
+        "chatSessionId": "sess_5be48462-dadd-40f9-897e-f29098e0e459",
+        "timestamp": 1794354843634
+      }
+    ]
+  }
+}

@@ -1,17 +1,51 @@
+﻿x-comun: &comun
+  build: .
+  image: gestor-facturas:latest
+  env_file:
+    - path: .env
+      required: false
+  environment: &comun-env
+    DB_PATH: /app/data/facturas.db
+    INVOICES_DIR: /app/facturas
+    TRACES_DIR: /app/traces
+    MCP_USER_ID: ${MCP_USER_ID:-default_user}
+  volumes:
+    # SQLite persiste en el host entre reinicios
+    - ./data:/app/data
+    # Imagenes/PDF de facturas del usuario
+    - ./facturas:/app/facturas
+    # Trazas del agente y de los Batches
+    - ./traces:/app/traces
+
 services:
+  # Agente CLI interactivo: docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg
   gestor-facturas:
-    build: .
-    image: gestor-facturas:latest
+    <<: *comun
     stdin_open: true
     tty: true
-    env_file:
-      - path: .env
-        required: false
+
+  # Servidor MCP finanzas-mcp (stdio). Perfil "mcp": docker compose --profile mcp up finanzas-mcp
+  finanzas-mcp:
+    <<: *comun
+    profiles: ["mcp"]
+    command: ["python", "-m", "finanzas_mcp.server"]
+    stdin_open: true
+
+  # Servidor MCP ocr-mcp (stdio). Perfil "mcp".
+  ocr-mcp:
+    <<: *comun
+    profiles: ["mcp"]
+    command: ["python", "-m", "ocr_mcp.server"]
+    stdin_open: true
+
+  # API HTTP de pruebas en http://127.0.0.1:8000/docs. Perfil "api".
+  api-pruebas:
+    <<: *comun
+    profiles: ["api"]
+    command: ["python", "-m", "api_pruebas", "--host", "0.0.0.0", "--port", "8000"]
     environment:
-      DB_PATH: /app/data/facturas.db
-      INVOICES_DIR: /app/facturas
-    volumes:
-      # SQLite persists on the host across container restarts
-      - ./data:/app/data
-      # Invoice images/PDFs provided by the user
-      - ./facturas:/app/facturas
+      <<: *comun-env
+      API_TEST_MODE: ${API_TEST_MODE:-false}
+    ports:
+      # Solo accesible desde la maquina local
+      - "127.0.0.1:8000:8000"
