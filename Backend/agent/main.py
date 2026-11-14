@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Optional, Sequence
 
 from agent.agent import InvoicePipeline, PipelineResult, Policy, load_policy
+from finanzas_mcp.business.hitl import PoliticaHitlError
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_POLICY_PATH = BACKEND_DIR / "politica.json"
@@ -38,6 +39,9 @@ DEFAULT_TRACES_DIR = BACKEND_DIR / "traces"
 _EXIT_CODES = {"success": 0, "validation_error": 1, "user_abort": 2,
                "step_limit": 3, "token_limit": 3}
 
+
+#: código de salida por política HITL inválida (antes de procesar documentos)
+EXIT_POLICY = 2
 
 #: código de salida por uso incorrecto (falta la ruta de la imagen); EX_USAGE
 EXIT_USAGE = 64
@@ -114,6 +118,20 @@ TOOL_SERVERS = {
 }
 
 
+#: servidor -> variable de entorno con la URL Streamable HTTP (vacía = stdio local)
+MCP_URL_VARS = {"ocr-mcp": "OCR_MCP_URL", "finanzas-mcp": "FINANZAS_MCP_URL"}
+
+
+def mcp_url(server: str) -> str:
+    """URL Streamable HTTP configurada para ``server`` ('' si debe usarse stdio)."""
+    return (os.environ.get(MCP_URL_VARS[server]) or "").strip()
+
+
+def mcp_http_configurado() -> bool:
+    """Verdadero si hay URL HTTP para algún servidor MCP."""
+    return any(mcp_url(s) for s in MCP_URL_VARS)
+
+
 def _server_params(module: str, extra_env: Mapping[str, str]):
     from mcp import StdioServerParameters  # import diferido
 
@@ -142,13 +160,15 @@ class McpToolbox:
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
         self._stack: Optional[AsyncExitStack] = None
+        self._task: Optional["asyncio.Future[None]"] = None
+        self._stop: Optional[asyncio.Event] = None
         self._sessions: dict[str, Any] = {}
         self.tools: dict[str, Callable[[dict], Any]] = {}
 
     def __enter__(self) -> "McpToolbox":
         self._thread.start()
         try:
-            self._run(self._open())
+            self._run(self._start())
         except BaseException:
             self.close()
             raise
@@ -163,6 +183,7 @@ class McpToolbox:
     async def _open(self) -> None:
         from mcp import ClientSession  # import diferido
         from mcp.client.stdio import stdio_client
+        from mcp.client.streamable_http import streamablehttp_client
 
         self._stack = AsyncExitStack()
         specs = {
@@ -170,9 +191,16 @@ class McpToolbox:
             "finanzas-mcp": ("finanzas_mcp.server", {"MCP_USER_ID": self._user_id}),
         }
         for name, (module, env) in specs.items():
-            read, write = await self._stack.enter_async_context(
-                stdio_client(_server_params(module, env))
-            )
+            url = mcp_url(name)
+            if url:
+                # Streamable HTTP: el servidor ya corre (p. ej. docker compose up).
+                read, write, _ = await self._stack.enter_async_context(
+                    streamablehttp_client(url)
+                )
+            else:
+                read, write = await self._stack.enter_async_context(
+                    stdio_client(_server_params(module, env))
+                )
             session = await self._stack.enter_async_context(ClientSession(read, write))
             await session.initialize()
             self._sessions[name] = session
@@ -186,13 +214,44 @@ class McpToolbox:
             return _result_to_raw(self._run(_go()))
         return call
 
+    async def _start(self) -> None:
+        self._stop = asyncio.Event()
+        ready = self._loop.create_future()
+        self._task = asyncio.ensure_future(self._lifecycle(ready))
+        await ready
+
+    async def _lifecycle(self, ready: "asyncio.Future[None]") -> None:
+        """Abre y cierra las sesiones MCP en una única tarea.
+
+        Los transportes (anyio task groups) exigen que entrar y salir de sus
+        contextos ocurra en la misma tarea.
+        """
+        try:
+            await self._open()
+            ready.set_result(None)
+            await self._stop.wait()
+        except BaseException as exc:  # noqa: BLE001
+            if not ready.done():
+                ready.set_exception(exc)
+        finally:
+            if self._stack is not None:
+                try:
+                    await self._stack.aclose()
+                except BaseException as exc:  # cierre best-effort
+                    print(f"[agent] Aviso al cerrar MCP: {exc}", file=sys.stderr)
+                self._stack = None
+
+    async def _shutdown(self) -> None:
+        self._stop.set()
+        await self._task
+
     def close(self) -> None:
-        if self._stack is not None and self._loop.is_running():
+        if self._task is not None and self._loop.is_running():
             try:
-                self._run(self._stack.aclose())
+                self._run(self._shutdown())
             except BaseException as exc:  # cierre best-effort
                 print(f"[agent] Aviso al cerrar MCP: {exc}", file=sys.stderr)
-            self._stack = None
+            self._task = None
         if self._loop.is_running():
             self._loop.call_soon_threadsafe(self._loop.stop)
         if self._thread.is_alive():
@@ -251,6 +310,9 @@ def main(image_path: Optional[str] = None, argv: Optional[Sequence[str]] = None)
 
     try:
         policy = load_policy(str(DEFAULT_POLICY_PATH))
+    except PoliticaHitlError as exc:
+        print(f"Error: política HITL inválida en politica.json: {exc}", file=sys.stderr)
+        return EXIT_POLICY
     except (OSError, ValueError) as exc:
         print(f"Error: no se pudo cargar politica.json: {exc}", file=sys.stderr)
         return 1

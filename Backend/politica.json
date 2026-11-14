@@ -12,6 +12,8 @@
     "CRC": 50000,
     "USD": 100
   },
+  "modo_hitl": "siempre",
+  "umbral_confianza_ocr": 0.75,
   "max_date_range_days": 90,
   "allowed_filters": ["comercio", "fecha_desde", "fecha_hasta", "categoria", "moneda"]
 }

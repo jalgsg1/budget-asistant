@@ -1,0 +1,75 @@
+{
+  "trace_id": "c126ab65-cc17-4d1b-880d-fd87ce21926d",
+  "user_id": "usuario_prueba",
+  "image_path": "batch1-0053.jpg",
+  "entries": [
+    {
+      "step": 1,
+      "action": "ocr_imagen",
+      "input_summary": "keys=['ruta']",
+      "output_summary": "ok",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-13T03:32:09.472358+00:00"
+    },
+    {
+      "step": 1,
+      "action": "ocr_retry",
+      "input_summary": "confianza baja",
+      "output_summary": "reintento",
+      "tool_called": null,
+      "timestamp": "2026-11-13T03:32:09.472543+00:00"
+    },
+    {
+      "step": 2,
+      "action": "ocr_imagen",
+      "input_summary": "keys=['ruta']",
+      "output_summary": "ok",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-13T03:32:12.254861+00:00"
+    },
+    {
+      "step": 3,
+      "action": "clarify_field",
+      "input_summary": "Baja confianza en 'fecha' (valor leído como dato: '2015-11-05'). Escriba el valor correcto o Enter para dejarlo: ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-13T03:32:12.255595+00:00"
+    },
+    {
+      "step": 4,
+      "action": "clarify_field",
+      "input_summary": "Baja confianza en 'categoria' (valor leído como dato: 'Compras'). Escriba el valor correcto o Enter para dejarlo: ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-13T03:32:12.255690+00:00"
+    },
+    {
+      "step": 5,
+      "action": "clarify_field",
+      "input_summary": "Baja confianza en 'descripcion' (valor leído como dato: 'Venta de libros, DVD y suscripción digital (4 líneas de artículos)'). Escriba el valor correcto o Enter para dejarlo: ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-13T03:32:12.255729+00:00"
+    },
+    {
+      "step": 6,
+      "action": "select_category",
+      "input_summary": "Categoría no reconocida o ambigua. Elija una:\n  1. Alimentación\n  2. Transporte\n  3. Salud\n  4. Educación\n  5. Entretenimiento\n  6. Servicios\n  7. Tecnología\n  8. Ropa\n  9. Hogar\n  10. Viajes\n  11. Restaurantes\n  12. Deportes\n  13. Mascotas\n  14. Seguros\n  15. Otros\nSelección: ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-13T03:32:12.255838+00:00"
+    },
+    {
+      "step": 6,
+      "action": "termination",
+      "input_summary": "",
+      "output_summary": "No se seleccionó una categoría válida. La transacción NO fue guardada.",
+      "tool_called": null,
+      "timestamp": "2026-11-13T03:32:12.255903+00:00"
+    }
+  ],
+  "final_status": "validation_error",
+  "termination_reason": "validation_failure",
+  "created_at": "2026-11-13T03:32:03.145476+00:00",
+  "transaction_id": null
+}

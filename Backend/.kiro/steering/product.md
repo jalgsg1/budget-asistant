@@ -10,8 +10,7 @@
 
 ## Problema que resuelve
 
-Reducir la fricción y los errores de captura al registrar facturas: montos mal digitados, fechas equivocadas, gastos duplicados y moneda incorrecta (CRC/USD). El agente lee la imagen, valida campos y aritmética, detecta duplicados y solo escribe con confirmación explícita del usuario.
-
+Reducir la fricción y los errores de captura al registrar facturas: montos mal digitados, fechas equivocadas, gastos duplicados y moneda incorrecta (CRC/USD). El agente lee la imagen, valida campos y aritmética, detecta duplicados y aplica confirmación humana adaptativa (HITL) según el nivel de riesgo y confianza de extracción antes de escribir en base de datos.
 ---
 
 ## Pipeline OCR y flujo del agente
@@ -20,11 +19,12 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 
 | Servidor | Tool | Operación | Qué valida |
 |---|---|---|---|
-| `ocr-mcp` | `ocr_imagen(ruta)` | Lectura | Ruta dentro de la carpeta de facturas, tipo y tamaño de imagen; devuelve texto envuelto como *contenido no confiable*. |
+| `ocr-mcp` | `ocr_imagen(ruta)` | Lectura | Ruta dentro de la carpeta de facturas, tipo y tamaño de imagen; devuelve texto envuelto como *contenido no confiable* y nivel de confianza de extracción. |
 | `finanzas-mcp` | `validar_factura(datos)` | Lectura | Campos obligatorios, fecha válida y no futura, moneda ISO 4217, coherencia subtotal + IVA = total. |
 | `finanzas-mcp` | `buscar_duplicados(comercio, fecha, total)` | Lectura | Solo consulta la cuenta del usuario activo; máximo 10 resultados. |
 | `finanzas-mcp` | `listar_transacciones(filtros)` | Lectura | Filtros en lista blanca, rango de fechas máximo, sin acceso a otras cuentas. |
-| `finanzas-mcp` | `registrar_transaccion(...)` | **Escritura** | Revalida todo lo de `validar_factura`, categoría en lista cerrada, rechaza duplicados, monto alto exige token de confirmación. |
+| `finanzas-mcp` | `registrar_transaccion(...)` | **Escritura** | Revalida todo lo de `validar_factura`, categoría en lista cerrada, rechaza duplicados, exige token de confirmación según política/riesgo. |
+
 
 ### Secuencia de pasos del agente (SKILL)
 
@@ -33,7 +33,7 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 2. Validar   → validar_factura(datos): verificar campos y coherencia aritmética.
 3. Aritmética → si subtotal + IVA ≠ total (±0,01): pedir corrección o confirmar al usuario.
 4. Duplicados → buscar_duplicados(comercio, fecha, total): bloquear si hay coincidencia.
-5. Confirmar → solicitar token explícito del usuario antes de escribir.
+5. Evaluar riesgo / Confirmar → Si la factura supera el umbral de monto (R7), tiene duplicados (R5), baja confianza, error aritmético o sospecha de inyección, solicitar token explícito del usuario. Si es limpia y de bajo riesgo, proceder directo al registro.
 6. Registrar → registrar_transaccion(...): el servidor revalida todo de forma independiente.
 ```
 
@@ -81,7 +81,9 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 
 - **Servidor MCP propio** con ≥ 3 tools, al menos 1 de escritura con validación en el servidor; defensa en profundidad: el servidor no confía en el agente.
 - **SKILL.md** con procedimiento, reglas y criterio de parada; desacoplado del modelo que lo ejecuta.
-- **politica.json** que declare tools permitidas, con confirmación, denegadas u ocultas; límites de pasos y tokens.
-- **Trazas** por ejecución: cada llamada, decisión, tokens y duración.
-- **Conjunto de evaluación** de ≥ 40 casos (≥ 30% difíciles), etiquetados por dos personas con κ de Cohen reportado.
+- **politica.json** que declare tools permitidas, modo HITL (`siempre` | `adaptativo`), umbrales de confianza y monto, límites de pasos y tokens.
+- **Trazas** por ejecución: cada llamada, decisión (incluyendo motivo de solicitud u omisión de HITL), tokens y duración.
+- **Conjunto de evaluación (Golden Set)** de ≥ 40 casos (≥ 30% difíciles), etiquetados manualmente con κ de Cohen reportado.
 - **Análisis de seguridad** con ≥ 5 ataques de inyección indirecta documentados y su resultado.
+- **Evaluación comparativa (Baselines):** comparación reproducible entre Baseline 1 (OCR+LLM directo a BD), Baseline 2 (OCR+LLM con prompt defensivo) y la arquitectura propuesta (MCP + HITL adaptativo) midiendo Integridad de Datos, Attack Success Rate (ASR), Tasa de Fricción y Costo Operacional.
+

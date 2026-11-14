@@ -15,6 +15,7 @@ from typing import Mapping
 from dotenv import load_dotenv
 
 from agent.agent import Policy, load_policy
+from finanzas_mcp.business.hitl import PoliticaHitlError
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
@@ -91,6 +92,8 @@ def cargar_config(env: Mapping[str, str] = os.environ) -> Config:
         policy = load_policy(str(politica_path))
         with open(politica_path, encoding="utf-8") as fh:
             policy_dict = json.load(fh)
+    except PoliticaHitlError as exc:
+        raise ConfigError(f"Política HITL inválida en politica.json: {exc}") from None
     except (OSError, ValueError) as exc:
         raise ConfigError(f"No se pudo leer politica.json: {type(exc).__name__}") from None
 

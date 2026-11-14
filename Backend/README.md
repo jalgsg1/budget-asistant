@@ -1,4 +1,4 @@
-﻿# gestor-facturas
+# gestor-facturas
 
 Asistente personal de finanzas basado en agente. Permite fotografiar facturas físicas o digitales y registrarlas en una base de datos SQLite local, usando la línea de comandos (CLI).
 
@@ -130,8 +130,20 @@ Códigos de salida:
 ### 6. Docker
 
 ```powershell
-docker compose --profile api up --build api-pruebas
+docker compose up --build
 ```
+
+Levanta los dos servidores MCP por **Streamable HTTP** y la API de pruebas con Swagger, todo con un solo comando:
+
+| Servicio | URL | Descripción |
+|---|---|---|
+| `api-pruebas` | `http://127.0.0.1:8000/docs` | Swagger. `/pipeline/run` y `/batch/run` llaman a los MCP por HTTP. |
+| `finanzas-mcp` | `http://127.0.0.1:8001/mcp` | MCP de finanzas (`/health` para healthcheck). |
+| `ocr-mcp` | `http://127.0.0.1:8002/mcp` | MCP de OCR (`/health` para healthcheck). |
+
+La API arranca cuando ambos MCP están saludables. Se conecta a ellos con `FINANZAS_MCP_URL` y `OCR_MCP_URL` (ya definidas en el compose); si no están definidas, usa los servicios en proceso. El agente CLI usa las mismas variables si se definen; si no, lanza los MCP por stdio.
+
+Los servidores aceptan `--transport stdio|streamable-http`, `--host` y `--port` (o `MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`); el valor por defecto es `stdio`.
 
 El compose monta `./data` (base de datos) en `/app/data`, `./facturas` en `/app/facturas` y `./traces` en `/app/traces`. Fija dentro del contenedor `DB_PATH`, `INVOICES_DIR`, `TRACES_DIR` y `SQLITE_JOURNAL_MODE=DELETE`; estos valores prevalecen sobre los del `.env`. Las demás variables (claves del LLM, `LLM_PROVIDER`, `OCR_MODEL`, `MCP_USER_ID`, `API_TEST_MODE`) se leen del archivo `.env`.
 
@@ -149,34 +161,27 @@ Si el `.env` tiene sintaxis de PowerShell, Compose falla con `unexpected charact
 
 #### Solución de problemas
 
-Si `http://127.0.0.1:8000/docs` responde `ERR_CONNECTION_REFUSED`, el servicio `api-pruebas` no está corriendo. Está en el perfil `api`, así que un `docker compose up` sin `--profile api` no lo levanta. Revise el estado y los logs:
+Si `http://127.0.0.1:8000/docs` responde `ERR_CONNECTION_REFUSED`, el servicio `api-pruebas` no está corriendo. Revise el estado y los logs:
 
 ```powershell
-docker compose --profile api ps -a
-docker compose --profile api logs --tail 50 api-pruebas
+docker compose ps -a
+docker compose logs --tail 50 api-pruebas
 ```
 
 Si `GET /transacciones` (o cualquier acceso a la base) responde `INTERNAL_ERROR` y los logs muestran `disk I/O error`, la base quedó en modo WAL. Detenga los contenedores, cierre cualquier programa que tenga abierta la base y mueva los tres archivos a un respaldo. La base se vuelve a crear vacía al arrancar, así que haga esto solo si la base no tiene datos que necesite:
 
 ```powershell
-docker compose --profile api stop
+docker compose stop
 New-Item -ItemType Directory data\respaldo_wal -Force
 Move-Item data\facturas.db* data\respaldo_wal\
-docker compose --profile api up -d --build api-pruebas
+docker compose up -d --build
 ```
 
 Si la base sí tiene datos, conviértala en lugar de moverla: `python -c "import sqlite3; c=sqlite3.connect('data/facturas.db'); print(c.execute('PRAGMA journal_mode=DELETE').fetchone())"`. El comando debe imprimir `('delete',)`.
 
-Servicios del compose (los de los perfiles no arrancan con un `up` normal):
+Agente CLI (perfil `cli`, no arranca con `up`): `docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg`.
 
-| Servicio | Perfil | Comando |
-|---|---|---|
-| `gestor-facturas` | (ninguno) | `docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg` |
-| `finanzas-mcp` | `mcp` | `docker compose --profile mcp up finanzas-mcp` |
-| `ocr-mcp` | `mcp` | `docker compose --profile mcp up ocr-mcp` |
-| `api-pruebas` | `api` | `docker compose --profile api up --build api-pruebas` y abrir `http://127.0.0.1:8000/docs` |
-
-Inicio rápido con Docker: cree `.env` con la clave del LLM (y opcionalmente `MCP_USER_ID`, `API_TEST_MODE`), ponga las imágenes en `facturas/` y ejecute el servicio que necesite. Los servidores MCP hablan por stdio: el contenedor queda esperando en stdin, por lo que normalmente un cliente MCP los lanza con `docker compose run --rm -T finanzas-mcp`. La API de pruebas publica el puerto solo en `127.0.0.1`. Los tres comparten `./data`, `./facturas` y `./traces`.
+Cree `.env` con la clave del LLM (y opcionalmente `MCP_USER_ID`, `API_TEST_MODE`) y ponga las imágenes en `facturas/`. Los puertos se publican solo en `127.0.0.1`. Los servicios comparten `./data`, `./facturas` y `./traces`.
 
 ## Proveedor de LLM
 

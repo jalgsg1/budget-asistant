@@ -203,12 +203,26 @@ class ServiciosNegocio:
             )
 
     def registrar(
-        self, datos: dict, token: str | None, high_token: str | None
+        self,
+        datos: dict,
+        token: str | None,
+        high_token: str | None,
+        confianza_ocr: float | None = None,
+        contenido_sospechoso: bool | None = None,
     ) -> int:
         payload = {
             k: v
             for k, v in datos.items()
-            if k not in ("confirmation_token", "high_amount_token", "user_id")
+            if k
+            not in (
+                "confirmation_token",
+                "high_amount_token",
+                "user_id",
+                "confianza_ocr",
+                "contenido_sospechoso",
+                "modo_hitl",
+                "umbral_confianza_ocr",
+            )
         }
         with self._repo() as repo:
             return _registrar_transaccion(
@@ -218,4 +232,6 @@ class ServiciosNegocio:
                 high_token,
                 self.config.policy_dict,
                 self.config.user_id,
+                confianza_ocr=confianza_ocr,
+                contenido_sospechoso=contenido_sospechoso,
             )

@@ -28,6 +28,7 @@ modificar el flujo.  El texto OCR completo no se guarda en la traza.
 from __future__ import annotations
 
 import json
+import math
 import re
 import sys
 import time
@@ -36,8 +37,19 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional, Protocol
 
+from agent.contenido_sospechoso import ResultadoEscaneo, escanear
+from agent.hitl import (
+    PROMPT_ALERTAS,
+    PROMPT_MONTO_ALTO,
+    PROMPT_REGISTRAR,
+    EntradaAlertas,
+    decidir_hitl,
+    evaluar_alertas,
+    generar_token_automatico,
+)
 from agent.tracer import Trace, TraceEntry, write_trace
 from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
+from finanzas_mcp.business.hitl import PoliticaHitlError, resolver_parametros_hitl  # noqa: F401
 
 # ---------------------------------------------------------------------------
 # Errores
@@ -90,6 +102,8 @@ class Policy:
     high_amount_threshold: dict[str, float] = field(default_factory=dict)
     max_date_range_days: int = 90
     allowed_filters: list[str] = field(default_factory=list)
+    modo_hitl: str = "siempre"
+    umbral_confianza_ocr: float = 0.75
 
     @property
     def allowed_tools(self) -> set[str]:
@@ -105,10 +119,16 @@ class Policy:
 
 
 def load_policy(path: str) -> Policy:
-    """Lee ``politica.json`` (UTF-8) y construye la ``Policy``."""
+    """Lee ``politica.json`` (UTF-8) y construye la ``Policy``.
+
+    Lanza ``PoliticaHitlError`` si ``modo_hitl`` o ``umbral_confianza_ocr`` son inválidos.
+    """
     with open(path, encoding="utf-8") as fh:
         raw = json.load(fh)
+    hitl = resolver_parametros_hitl(raw)
     return Policy(
+        modo_hitl=hitl.modo_hitl,
+        umbral_confianza_ocr=hitl.umbral_confianza_ocr,
         tools=dict(raw.get("tools", {})),
         step_limit=int(raw.get("step_limit", 8)),
         token_limit=int(raw.get("token_limit", 4000)),
@@ -197,23 +217,9 @@ OPTIONAL_FIELDS = ("subtotal", "iva", "descripcion")
 ALLOWED_FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS
 _NUMERIC = {"total", "subtotal", "iva"}
 _OCR_REQUIRED = ("comercio", "fecha", "total", "moneda")
-LOW_CONFIDENCE_THRESHOLD = 0.75
 _MAX_TEXT = 200
 _YES = {"si", "sí", "s", "yes", "y"}
 _NO = {"no", "n", "cancelar", "cancel"}
-
-_INJECTION_PATTERNS = [
-    re.compile(p, re.I)
-    for p in (
-        r"\bsystem\s*:",
-        r"ignore\s+(all\s+)?(previous|prior)\s+instructions",
-        r"ignora\s+(las\s+)?instrucciones",
-        r"\b(drop|delete|insert|update)\s+\w*\s*(table|from|into)\b",
-        r"\bselect\b.+\bfrom\b",
-        r"[A-Za-z0-9+/]{40,}={0,2}",  # posible payload base64
-        r"\b(transfer|exfiltrate|reveal)\b",
-    )
-]
 
 
 def _default_token_estimate(*parts: Any) -> int:
@@ -250,6 +256,12 @@ class InvoicePipeline:
         self._steps = StepCounter(policy.step_limit)
         self._tokens = TokenCounter(policy.token_limit)
         self._trace = Trace(trace_id="", user_id=user_id, image_path="")
+        self._ocr_sel: Optional[dict] = None
+        self._ocr_calls = 0
+        self._escaneo = ResultadoEscaneo(False, (), None)
+        self._datos_extraidos: dict = {}
+        self._n_duplicados = 0
+        self._token_auto = False
 
     # -- API -----------------------------------------------------------------
 
@@ -258,6 +270,12 @@ class InvoicePipeline:
             trace_id=str(uuid.uuid4()), user_id=self._user_id,
             image_path=image_path, created_at=_now(),
         )
+        self._ocr_sel = None
+        self._ocr_calls = 0
+        self._escaneo = ResultadoEscaneo(False, (), None)
+        self._datos_extraidos = {}
+        self._n_duplicados = 0
+        self._token_auto = False
         status, reason, message, tx_id, datos = "validation_error", "validation_failure", "", None, {}
         try:
             datos = self._step1_extraer(image_path)
@@ -337,19 +355,39 @@ class InvoicePipeline:
     # -- Paso 1: Extraer -----------------------------------------------------
 
     def _step1_extraer(self, image_path: str) -> dict:
+        umbral = self._policy.umbral_confianza_ocr
         ocr = self._ocr(image_path)
-        if _is_low(ocr):
+        self._ocr_calls = 1
+        self._set_ocr_block(ocr)
+        if _es_bajo(ocr, umbral):
             self._log("ocr_retry", "confianza baja", "reintento", None)
-            ocr = self._ocr(image_path)
+            try:
+                segundo = self._ocr(image_path)
+            except ToolError:
+                # Req. 4.4: se conserva el primer resultado.
+                self._ocr_calls += 1
+            else:
+                self._ocr_calls += 1
+                ocr = _seleccionar(ocr, segundo)
+            self._set_ocr_block(ocr)
+        self._ocr_sel = ocr
         datos = _map_fields(ocr["text"])
-        self._flag_injection(ocr["text"], datos)
-        if _is_low(ocr):
+        self._escanear(ocr["text"])
+        if _es_bajo(ocr, umbral):
             low = [f for f in ocr["low"] if f in ALLOWED_FIELDS] or [
                 f for f in _OCR_REQUIRED if datos.get(f) is None
             ]
             for f in low:
                 self._clarify(datos, f)
+        self._datos_extraidos = dict(datos)  # D5: antes de los pasos 2 y 3
         return datos
+
+    def _set_ocr_block(self, ocr: dict) -> None:
+        self._trace.ocr = {
+            "confianza_ocr": ocr["confianza"],
+            "llamadas_ocr": self._ocr_calls,
+            "umbral_confianza_ocr": self._policy.umbral_confianza_ocr,
+        }
 
     def _ocr(self, image_path: str) -> dict:
         raw = self._call("ocr_imagen", {"ruta": image_path})
@@ -362,8 +400,19 @@ class InvoicePipeline:
             conf = 0.0
         low = res.get("low_confidence_fields", [])
         low = [str(x) for x in low] if isinstance(low, list) else []
+        glob = res.get("confianza_ocr") if isinstance(res, dict) else None
+        confianza = float(glob) if _es_numero(glob) else conf
+        campos_raw = res.get("confianza_campos") if isinstance(res, dict) else None
+        campos = {str(k): float(v) for k, v in campos_raw.items() if _es_numero(v)} \
+            if isinstance(campos_raw, dict) else {}
+        uso = res.get("uso_tokens") if isinstance(res, dict) else None
+        if isinstance(uso, dict):
+            for clave, attr in (("entrada", "tokens_entrada"), ("salida", "tokens_salida")):
+                n = uso.get(clave)
+                if _es_numero(n) and n > 0:
+                    setattr(self._trace, attr, getattr(self._trace, attr) + int(n))
         return {"text": text if isinstance(text, str) else "", "confidence": conf,
-                "low": low, "is_untrusted": True}
+                "low": low, "is_untrusted": True, "confianza": confianza, "campos": campos}
 
     def _clarify(self, datos: dict, f: str) -> None:
         shown = datos.get(f)
@@ -380,10 +429,13 @@ class InvoicePipeline:
             raise _Stop("validation_failure", f"Valor inválido para '{f}'.")
         datos[f] = value
 
-    def _flag_injection(self, text: str, datos: dict) -> None:
-        values = [text] + [v for v in datos.values() if isinstance(v, str)]
-        if any(p.search(v) for v in values for p in _INJECTION_PATTERNS):
-            self._log("suspicious_data_detected", "contenido OCR", "tratado como dato; no ejecutado", None)
+    def _escanear(self, text: str) -> None:
+        self._escaneo = escanear(text)
+        self._trace.patrones_sospechosos = list(self._escaneo.ids)
+        self._trace.motivo_fallo_escaneo = self._escaneo.motivo_fallo
+        if self._escaneo.sospechoso:
+            self._log("suspicious_data_detected", "contenido OCR",
+                      "tratado como dato; no ejecutado", None)
 
     # -- Pasos 2 y 3: Validar / Aritmética -----------------------------------
 
@@ -459,8 +511,13 @@ class InvoicePipeline:
         if isinstance(res, dict):
             res = res.get("duplicados", res.get("result", []))
         matches = res if isinstance(res, list) else []
+        self._n_duplicados = len(matches)
         if not matches:
             return False
+        if self._policy.modo_hitl == "adaptativo":
+            # D6: sin pregunta aquí; POSSIBLE_DUPLICATE sale en la solicitud única del paso 5.
+            self._log("duplicates_found", "", f"n_duplicados={len(matches)}", None)
+            return True
         lines = "\n".join(
             f"  - {m.get('comercio')} | {m.get('fecha')} | {m.get('total')} {m.get('moneda', '')}"
             for m in matches if isinstance(m, dict)
@@ -472,30 +529,90 @@ class InvoicePipeline:
 
     # -- Paso 5: Confirmación ------------------------------------------------
 
+    def _evaluar_alertas(self, datos: dict) -> tuple[str, ...]:
+        ocr = self._ocr_sel or {"confianza": None, "campos": {}, "low": []}
+        umbral = self._policy.umbral_confianza_ocr
+        legado = not ocr["campos"] and ocr["confianza"] is not None and _es_bajo(ocr, umbral)
+        ext = self._datos_extraidos
+        entrada = EntradaAlertas(
+            confianza_global=ocr["confianza"],
+            confianza_campos=dict(ocr["campos"]),
+            ocr_bajo_legado=legado,
+            umbral_confianza_ocr=umbral,
+            total=datos.get("total"),
+            moneda=datos.get("moneda"),
+            umbrales_monto=dict(self._policy.high_amount_threshold),
+            subtotal_extraido=ext.get("subtotal"),
+            iva_extraido=ext.get("iva"),
+            total_extraido=ext.get("total"),
+            n_duplicados=self._n_duplicados,
+            contenido_sospechoso=self._escaneo.sospechoso,
+        )
+        return evaluar_alertas(entrada)
+
     def _step5_confirmar(self, datos: dict) -> tuple[str, Optional[str]]:
+        alertas = self._evaluar_alertas(datos)
+        modo = self._policy.modo_hitl
+        decision = decidir_hitl(modo, alertas)
+        # Se registran antes de preguntar para conservarlas ante un rechazo (Req. 5.10).
+        self._trace.alertas_hitl = list(alertas)
+        self._trace.decision_hitl = decision.a_dict()
+        self._log("decision_hitl", f"modo_hitl={modo}", decision.razon, None)
+
+        if modo == "adaptativo":
+            if not decision.hitl_solicitado:
+                self._token_auto = True  # Req. 5.1: sin llamar a ask
+                return generar_token_automatico(), None
+            return self._confirmar_alertas(datos, alertas)
+
+        # Modo "siempre": flujo original, sin excepción por monto (Req. 3.1).
         high_token = None
         threshold = self._policy.high_amount_threshold.get(datos["moneda"])
         if threshold is not None and datos["total"] > threshold:
-            high_token = self._token(
-                f"Monto alto: {datos['total']} {datos['moneda']} (umbral {threshold}). "
-                "Escriba el token de confirmación de monto alto (o 'no'): ",
-                "high_amount_confirmation",
-            )
-            if high_token is None:
-                raise _Stop("user_rejection", "No se proporcionó la confirmación de monto alto.")
-        token = self._token("Escriba el token de confirmación para registrar (o 'no'): ",
-                            "confirmation_token")
+            high_token = self._pedir_monto_alto(datos, threshold)
+        token = self._token(f"Escriba el {PROMPT_REGISTRAR} (o 'no'): ", "confirmation_token")
         if token is None:
             raise _Stop("user_rejection", "No se proporcionó el token de confirmación.")
         return token, high_token
+
+    def _confirmar_alertas(self, datos: dict, alertas: tuple[str, ...]) -> tuple[str, Optional[str]]:
+        """Una única solicitud consolidada con todas las alertas (Req. 5.7)."""
+        lista = "\n".join(f"  - {a}" for a in alertas)
+        token = self._token(
+            f"{PROMPT_ALERTAS}:\n{lista}\n"
+            f"Revise la factura ({datos.get('total')} {datos.get('moneda')}). "
+            f"Escriba el {PROMPT_REGISTRAR} (o 'no'): ",
+            "hitl_alerts_confirmation",
+        )
+        if token is None:
+            raise _Stop("user_rejection", "El usuario rechazó o no respondió la solicitud de Alertas HITL.")
+        high_token = None
+        if "HIGH_AMOUNT" in alertas:
+            threshold = self._policy.high_amount_threshold.get(datos["moneda"])
+            high_token = self._pedir_monto_alto(datos, threshold)
+        return token, high_token
+
+    def _pedir_monto_alto(self, datos: dict, threshold: Any) -> str:
+        high_token = self._token(
+            f"Monto alto: {datos['total']} {datos['moneda']} (umbral {threshold}). "
+            f"Escriba el {PROMPT_MONTO_ALTO} (o 'no'): ",
+            "high_amount_confirmation",
+        )
+        if high_token is None:
+            raise _Stop("user_rejection", "No se proporcionó la confirmación de monto alto.")
+        return high_token
 
     # -- Paso 6: Registrar ---------------------------------------------------
 
     def _step6_registrar(self, datos: dict, token: str, high_token: Optional[str]) -> Optional[int]:
         args = _payload(datos)
         args["confirmation_token"] = token
-        if high_token is not None:
+        # Con Token_Automatico nunca se envía high_amount_token.
+        if high_token is not None and not self._token_auto:
             args["high_amount_token"] = high_token
+        if self._ocr_sel is not None:
+            args["confianza_ocr"] = self._ocr_sel["confianza"]
+        args["contenido_sospechoso"] = bool(self._escaneo.sospechoso)
         try:
             res = self._call("registrar_transaccion", args, confirmed=True)
         except ToolError as err:
@@ -508,8 +625,24 @@ class InvoicePipeline:
 # ---------------------------------------------------------------------------
 
 
-def _is_low(ocr: dict) -> bool:
-    return ocr["confidence"] < LOW_CONFIDENCE_THRESHOLD or bool(ocr["low"])
+def _es_numero(v: Any) -> bool:
+    """Número finito real (excluye ``bool`` y NaN/inf)."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def _es_bajo(ocr: dict, umbral: float) -> bool:
+    """Confianza baja.  Con mapa por campo usa global y campos requeridos;
+    con OCR legado (sin ``campos``) conserva la regla anterior."""
+    if ocr["campos"]:
+        if ocr["confianza"] < umbral:
+            return True
+        return any(ocr["campos"][f] < umbral for f in _OCR_REQUIRED if f in ocr["campos"])
+    return ocr["confianza"] < umbral or bool(ocr["low"])
+
+
+def _seleccionar(primero: dict, segundo: dict) -> dict:
+    """Mayor confianza global; en empate, el primero (Req. 4.2)."""
+    return segundo if segundo["confianza"] > primero["confianza"] else primero
 
 
 def _clean(s: str) -> str:

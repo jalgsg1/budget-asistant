@@ -125,3 +125,6 @@ Si todos los escenarios fueron bloqueados, indicar: "No se registraron ataques e
 ## 7. Conclusiones
 
 [A COMPLETAR: valoración general de la resistencia a inyección indirecta, limitaciones y trabajo futuro.]
+
+<!-- BENCH:INICIO -->
+<!-- BENCH:FIN -->

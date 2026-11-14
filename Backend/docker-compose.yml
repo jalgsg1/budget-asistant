@@ -19,35 +19,57 @@
     # Trazas del agente y de los Batches
     - ./traces:/app/traces
 
-services:
-  # Agente CLI interactivo: docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg
-  gestor-facturas:
-    <<: *comun
-    stdin_open: true
-    tty: true
+# Todo el stack (MCP + API con Swagger):  docker compose up --build
+# Swagger: http://127.0.0.1:8000/docs
 
-  # Servidor MCP finanzas-mcp (stdio). Perfil "mcp": docker compose --profile mcp up finanzas-mcp
+services:
+  # Servidor MCP finanzas-mcp por Streamable HTTP: http://127.0.0.1:8001/mcp
   finanzas-mcp:
     <<: *comun
-    profiles: ["mcp"]
-    command: ["python", "-m", "finanzas_mcp.server"]
-    stdin_open: true
+    command: ["python", "-m", "finanzas_mcp.server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - "127.0.0.1:8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8001/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
-  # Servidor MCP ocr-mcp (stdio). Perfil "mcp".
+  # Servidor MCP ocr-mcp por Streamable HTTP: http://127.0.0.1:8002/mcp
   ocr-mcp:
     <<: *comun
-    profiles: ["mcp"]
-    command: ["python", "-m", "ocr_mcp.server"]
-    stdin_open: true
+    command: ["python", "-m", "ocr_mcp.server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8002"]
+    ports:
+      - "127.0.0.1:8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8002/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
-  # API HTTP de pruebas en http://127.0.0.1:8000/docs. Perfil "api".
+  # API HTTP de pruebas con Swagger en http://127.0.0.1:8000/docs.
+  # /pipeline y /batch llaman a los MCP por Streamable HTTP.
   api-pruebas:
     <<: *comun
-    profiles: ["api"]
     command: ["python", "-m", "api_pruebas", "--host", "0.0.0.0", "--port", "8000"]
     environment:
       <<: *comun-env
       API_TEST_MODE: ${API_TEST_MODE:-false}
+      FINANZAS_MCP_URL: http://finanzas-mcp:8001/mcp
+      OCR_MCP_URL: http://ocr-mcp:8002/mcp
+    depends_on:
+      finanzas-mcp:
+        condition: service_healthy
+      ocr-mcp:
+        condition: service_healthy
     ports:
       # Solo accesible desde la maquina local
       - "127.0.0.1:8000:8000"
+
+  # Agente CLI interactivo (perfil "cli"; usa MCP por stdio dentro del contenedor):
+  #   docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg
+  gestor-facturas:
+    <<: *comun
+    profiles: ["cli"]
+    stdin_open: true
+    tty: true

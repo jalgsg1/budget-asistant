@@ -25,6 +25,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage
 
 from finanzas_mcp.models import OcrResult
+from ocr_mcp.ocr_core import calcular_confianzas
 
 # ---------------------------------------------------------------------------
 # Prompt engineering
@@ -146,6 +147,7 @@ class OcrClient:
                 max_tokens=1024,
             )
         self._model = model
+        self._ultimo_uso: dict[str, int] = {"entrada": 0, "salida": 0}
         print(
             f"[ocr_client] Initialized with provider={self._provider} model={model}",
             file=sys.stderr,
@@ -193,7 +195,9 @@ class OcrClient:
         raw_response = self._call_llm(image_data, mime_type)
         print(f"[ocr_client] Raw LLM response length: {len(raw_response)}", file=sys.stderr)
 
-        return self._parse_response(raw_response)
+        resultado = self._parse_response(raw_response)
+        resultado.uso_tokens = dict(self._ultimo_uso)
+        return resultado
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -239,7 +243,17 @@ class OcrClient:
                 },
             }
         message = HumanMessage(content=[{"type": "text", "text": _SYSTEM_PROMPT}, media])
+        self._ultimo_uso = {"entrada": 0, "salida": 0}
         response = self._llm.invoke([message])
+        uso = getattr(response, "usage_metadata", None)
+        if isinstance(uso, dict):
+            try:
+                self._ultimo_uso = {
+                    "entrada": int(uso.get("input_tokens") or 0),
+                    "salida": int(uso.get("output_tokens") or 0),
+                }
+            except (TypeError, ValueError):
+                print("[ocr_client] WARNING: usage_metadata inválido", file=sys.stderr)
         return str(response.content)
 
     def _parse_response(self, raw: str) -> OcrResult:
@@ -271,11 +285,14 @@ class OcrClient:
                 confidence=0.0,
                 is_untrusted=True,
                 low_confidence_fields=_REQUIRED_FIELDS[:],
+                confianza_ocr=0.0,
+                confianza_campos={},
             )
 
         # Extract the per-field confidence map (default to 0.0 for missing entries)
         confidence_map: dict[str, float] = {}
         raw_conf = data.pop("confidence", {})
+        confianza_global, confianza_campos, _ = calcular_confianzas(data, raw_conf)
         if isinstance(raw_conf, dict):
             for k, v in raw_conf.items():
                 try:
@@ -315,4 +332,6 @@ class OcrClient:
             confidence=round(overall_confidence, 4),
             is_untrusted=True,  # ALWAYS True — Requirement 1.5
             low_confidence_fields=low_confidence_fields,
+            confianza_ocr=confianza_global,
+            confianza_campos=confianza_campos,
         )

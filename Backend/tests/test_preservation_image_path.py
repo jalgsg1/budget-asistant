@@ -120,7 +120,10 @@ def test_compose_services_volumes_env(compose, svc):
 
 def test_compose_service_commands(compose):
     sv = compose["services"]
-    assert sv["finanzas-mcp"]["command"] == ["python", "-m", "finanzas_mcp.server"]
-    assert sv["ocr-mcp"]["command"] == ["python", "-m", "ocr_mcp.server"]
+    # Los MCP corren por Streamable HTTP dentro de compose.
+    assert sv["finanzas-mcp"]["command"][:3] == ["python", "-m", "finanzas_mcp.server"]
+    assert "streamable-http" in sv["finanzas-mcp"]["command"]
+    assert sv["ocr-mcp"]["command"][:3] == ["python", "-m", "ocr_mcp.server"]
+    assert "streamable-http" in sv["ocr-mcp"]["command"]
     assert sv["api-pruebas"]["command"][:3] == ["python", "-m", "api_pruebas"]
     assert "gestor-facturas" in sv

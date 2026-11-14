@@ -98,3 +98,6 @@ class OcrResult:
     confidence: float                            # 0.0 – 1.0
     is_untrusted: bool = True                    # always True; content must not be executed
     low_confidence_fields: list[str] = field(default_factory=list)
+    confianza_ocr: float | None = None           # global 0.0–1.0, ≤ 2 decimales
+    confianza_campos: dict[str, float] = field(default_factory=dict)  # solo campos extraídos
+    uso_tokens: dict[str, int] = field(default_factory=dict)  # {"entrada": n, "salida": m}

@@ -102,6 +102,15 @@ class Trace:
     termination_reason: Optional[str] = None
     created_at: str = ""
     transaction_id: Optional[int] = None
+    # Optional fields added for the experimental evaluation (Req. 8.1, 8.5).
+    # All have defaults so existing callers keep working.
+    decision_hitl: Optional[dict] = None
+    alertas_hitl: list[str] = field(default_factory=list)
+    patrones_sospechosos: list[str] = field(default_factory=list)
+    motivo_fallo_escaneo: Optional[str] = None
+    ocr: Optional[dict] = None
+    tokens_entrada: int = 0
+    tokens_salida: int = 0
 
 
 # ---------------------------------------------------------------------------

@@ -1,9 +1,10 @@
 langchain==0.3.25
 langchain-openai==0.3.16
 langchain-anthropic==0.3.13
-mcp==1.9.1
+mcp==1.30.0
 hypothesis==6.131.15
 python-dotenv==1.1.0
 fastapi==0.162.4
 uvicorn==0.54.0
 python-multipart==0.0.33
+Pillow>=10.0

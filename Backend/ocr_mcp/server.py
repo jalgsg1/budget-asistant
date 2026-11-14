@@ -126,7 +126,10 @@ async def _main() -> None:
 
 
 def main() -> None:
-    anyio.run(_main)
+    """Punto de entrada: stdio (defecto) o Streamable HTTP (``--transport streamable-http``)."""
+    from mcp_transport import ejecutar
+
+    ejecutar(server, lambda: anyio.run(_main), puerto_defecto=8002)
 
 
 if __name__ == "__main__":

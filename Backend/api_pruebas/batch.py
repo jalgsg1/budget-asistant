@@ -347,7 +347,7 @@ from api_pruebas.esquemas import (  # noqa: E402
     ConteoClasificaciones,
     ReporteBatch,
 )
-from api_pruebas.herramientas import construir_tools  # noqa: E402
+from api_pruebas.mcp_remoto import herramientas_pipeline  # noqa: E402
 from api_pruebas.servicios import ServiciosNegocio  # noqa: E402
 
 _PATRON_BATCH_ID = re.compile(r"^[A-Za-z0-9-]{1,64}$")
@@ -400,11 +400,12 @@ def ejecutar_batch(servicios: ServiciosNegocio, config: Config, req: BatchIn) ->
             guion = req.respuestas_por_defecto
         io = AutoConfirmIO(guion, req.auto_confirmar, req.confirmar_duplicados)
         try:
-            pipeline = InvoicePipeline(
-                construir_tools(servicios), io, config.policy, config.user_id, str(directorio)
-            )
             ruta = _ruta_relativa(carpeta, config.invoices_dir, archivo)
-            resultado = pipeline.run(ruta)
+            with herramientas_pipeline(servicios, config) as tools:
+                pipeline = InvoicePipeline(
+                    tools, io, config.policy, config.user_id, str(directorio)
+                )
+                resultado = pipeline.run(ruta)
             resultados.append(clasificar(archivo, resultado, vistos))
         except Exception as exc:  # noqa: BLE001
             resultados.append(clasificar_excepcion(archivo, exc))

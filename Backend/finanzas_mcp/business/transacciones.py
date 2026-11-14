@@ -14,11 +14,21 @@ Requirements: 2.3, 3.4, 4.3, 5.4, 6.4, 6.5, 7.4, 8.3, 8.4, 9.2, 9.3,
 
 from __future__ import annotations
 
+import math
+import sys
 from datetime import date, datetime
 from typing import Any
 
 from finanzas_mcp.db.repository import TransactionRepository
 from finanzas_mcp.models import Transaction, ValidationResult
+from finanzas_mcp.business.hitl import (
+    CODIGO_AUTO_NO_PERMITIDO,
+    CODIGO_MONTO_ALTO,
+    PoliticaHitlError,
+    decidir_rechazo_automatico,
+    es_token_automatico,
+    resolver_parametros_hitl,
+)
 from finanzas_mcp.business.validacion import (
     validar_campos_obligatorios,
     validar_fecha,
@@ -103,8 +113,15 @@ def registrar_transaccion(
     high_amount_token: str | None,
     policy: dict[str, Any],
     user_id: str,
+    confianza_ocr: float | None = None,
+    contenido_sospechoso: bool | None = None,
 ) -> int:
     """Revalida R1–R8 de forma independiente y persiste la transacción si todo pasa.
+
+    Si ``token`` es un Token_Automatico (``auto:...``) solo se acepta en modo
+    ``adaptativo`` (según la política del servidor) y tras revalidar que la
+    factura es limpia; ``confianza_ocr`` y ``contenido_sospechoso`` solo se
+    usan en esa rama y su ausencia implica rechazo (falla cerrada).
 
     El ``user_id`` **siempre** se inyecta desde el contexto de sesión de
     confianza; nunca se toma del payload ``datos`` suministrado por el agente.
@@ -139,6 +156,24 @@ def registrar_transaccion(
     ValidationError
         Si cualquier validación R1–R8 falla.
     """
+    # Política HITL solo del servidor (nunca del payload); falla cerrada.
+    es_auto = es_token_automatico(token)
+    try:
+        params = resolver_parametros_hitl(policy, exigir_umbral=False)
+        modo_hitl, umbral_ocr = params.modo_hitl, params.umbral_confianza_ocr
+    except PoliticaHitlError as exc:
+        print(f"[finanzas-mcp] Política HITL inválida, se usa 'siempre': {exc}", file=sys.stderr)
+        modo_hitl, umbral_ocr = "siempre", 1.0
+
+    if es_auto and modo_hitl != "adaptativo":
+        raise ValidationError(
+            ValidationResult(
+                is_valid=False,
+                errors=["Un token automático no está permitido en este modo."],
+                error_code=CODIGO_AUTO_NO_PERMITIDO,
+            )
+        )
+
     # ------------------------------------------------------------------
     # R1 — Campos obligatorios
     # ------------------------------------------------------------------
@@ -162,15 +197,19 @@ def registrar_transaccion(
 
     # ------------------------------------------------------------------
     # R4 — Coherencia aritmética (solo cuando subtotal e iva están presentes)
+    # En la rama automática se evalúa dentro de decidir_rechazo_automatico.
     # ------------------------------------------------------------------
     subtotal = datos.get("subtotal")
     iva = datos.get("iva")
+    aritmetica_invalida = False
     if subtotal is not None and iva is not None:
         result_r4 = validar_aritmetica(
             float(subtotal), float(iva), float(datos["total"])
         )
         if not result_r4.is_valid:
-            raise ValidationError(result_r4)
+            if not es_auto:
+                raise ValidationError(result_r4)
+            aritmetica_invalida = True
 
     # ------------------------------------------------------------------
     # R6 — Lista blanca de categoría
@@ -190,6 +229,58 @@ def registrar_transaccion(
         umbral = high_amount_threshold.get(moneda, high_amount_threshold.get("USD", 0))
     else:
         umbral = float(high_amount_threshold)
+
+    if es_auto:
+        # Token automático: nunca sustituye la confirmación humana de monto
+        # alto ni de ninguna otra alerta; high_amount_token se ignora.
+        monto_alto = float(datos["total"]) > float(umbral)
+        try:
+            duplicado = bool(
+                repo.find_duplicates(
+                    comercio=datos["comercio"],
+                    fecha=datos["fecha"],
+                    total=float(datos["total"]),
+                    user_id=user_id,
+                    limit=1,
+                )
+            )
+        except Exception:
+            duplicado = True  # falla cerrada
+        confianza_ok = (
+            isinstance(confianza_ocr, (int, float))
+            and not isinstance(confianza_ocr, bool)
+            and math.isfinite(confianza_ocr)
+            and confianza_ocr >= umbral_ocr
+        )
+        codigo = decidir_rechazo_automatico(
+            monto_alto=monto_alto,
+            aritmetica_invalida=aritmetica_invalida,
+            duplicado=duplicado,
+            confianza_baja_o_ausente=not confianza_ok,
+            contenido_sospechoso_o_ausente=contenido_sospechoso is not False,
+        )
+        if codigo is not None:
+            mensaje = (
+                "Se requiere confirmación humana de monto alto."
+                if codigo == CODIGO_MONTO_ALTO
+                else "Se requiere confirmación humana."
+            )
+            raise ValidationError(
+                ValidationResult(is_valid=False, errors=[mensaje], error_code=codigo)
+            )
+        return repo.insert(
+            Transaction(
+                user_id=user_id,
+                comercio=datos["comercio"],
+                fecha=datos["fecha"],
+                total=float(datos["total"]),
+                moneda=moneda,
+                categoria=datos["categoria"].strip(),
+                subtotal=float(subtotal) if subtotal is not None else None,
+                iva=float(iva) if iva is not None else None,
+                descripcion=datos.get("descripcion"),
+            )
+        )
 
     result_r7 = validar_monto_alto(
         total=float(datos["total"]),

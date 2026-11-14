@@ -108,6 +108,8 @@ def _load_policy(path: str) -> dict:
             "token_limit": 4000,
             "high_amount_threshold": {"CRC": 50000, "USD": 100},
             "max_date_range_days": 90,
+            "modo_hitl": "siempre",
+            "umbral_confianza_ocr": 0.75,
             "allowed_filters": [
                 "comercio",
                 "fecha_desde",
@@ -260,7 +262,11 @@ async def handle_list_tools() -> list[types.Tool]:
             description=(
                 "Revalida R1–R8 de forma independiente y persiste la transacción "
                 "si todo pasa. Requiere confirmation_token (R8) y, cuando el total "
-                "supera el umbral configurado, high_amount_token (R7)."
+                "supera el umbral configurado, high_amount_token (R7). "
+                "En modo adaptativo del servidor acepta un token automático "
+                "('auto:...') solo si la factura es limpia: confianza_ocr (0..1) "
+                "alcanza el umbral y contenido_sospechoso es false; si faltan, se "
+                "rechaza y se requiere confirmación humana."
             ),
             inputSchema={
                 "type": "object",
@@ -275,6 +281,8 @@ async def handle_list_tools() -> list[types.Tool]:
                     "descripcion":        {"type": "string"},
                     "confirmation_token": {"type": "string"},
                     "high_amount_token":  {"type": "string"},
+                    "confianza_ocr":        {"type": "number"},
+                    "contenido_sospechoso": {"type": "boolean"},
                 },
                 "required": [
                     "comercio",
@@ -440,9 +448,19 @@ async def _handle_registrar_transaccion(
     datos: dict = {
         k: v
         for k, v in args.items()
-        if k not in {"confirmation_token", "high_amount_token", "user_id"}
+        if k
+        not in {
+            "confirmation_token",
+            "high_amount_token",
+            "user_id",
+            "confianza_ocr",
+            "contenido_sospechoso",
+            "modo_hitl",
+            "umbral_confianza_ocr",
+        }
     }
     # Ignoramos explícitamente cualquier user_id del payload (Req. 10.3).
+    # modo_hitl y umbral_confianza_ocr solo provienen de la política del servidor.
 
     tx_id = _registrar_transaccion(
         repo=_repo,
@@ -451,6 +469,8 @@ async def _handle_registrar_transaccion(
         high_amount_token=high_amount_token,
         policy=_policy,
         user_id=user_id,  # siempre del contexto de sesión
+        confianza_ocr=args.get("confianza_ocr"),
+        contenido_sospechoso=args.get("contenido_sospechoso"),
     )
 
     print(
@@ -476,8 +496,10 @@ async def _main() -> None:
 
 
 def main() -> None:
-    """Punto de entrada sincrónico para invocar desde CLI o desde subprocess."""
-    anyio.run(_main)
+    """Punto de entrada: stdio (defecto) o Streamable HTTP (``--transport streamable-http``)."""
+    from mcp_transport import ejecutar
+
+    ejecutar(server, lambda: anyio.run(_main), puerto_defecto=8001)
 
 
 if __name__ == "__main__":

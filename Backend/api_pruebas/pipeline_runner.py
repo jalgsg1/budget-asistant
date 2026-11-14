@@ -13,7 +13,7 @@ from agent.agent import InvoicePipeline, ToolError
 from api_pruebas.config import Config
 from api_pruebas.errores import ErrorApi, mapear_excepcion, redactar
 from api_pruebas.esquemas import PipelineRespuesta
-from api_pruebas.herramientas import construir_tools
+from api_pruebas.mcp_remoto import herramientas_pipeline
 from api_pruebas.servicios import ServiciosNegocio
 from ocr_mcp.ocr_core import OcrToolError, validar_ruta
 
@@ -58,12 +58,12 @@ def ejecutar_pipeline(
         raise ErrorApi(status, code, msg) from None
 
     io = ScriptedIO(respuestas)
-    tools = construir_tools(servicios)
-    pipeline = InvoicePipeline(
-        tools, io, config.policy, config.user_id, str(config.traces_dir)
-    )
     try:
-        result = pipeline.run(ruta)
+        with herramientas_pipeline(servicios, config) as tools:
+            pipeline = InvoicePipeline(
+                tools, io, config.policy, config.user_id, str(config.traces_dir)
+            )
+            result = pipeline.run(ruta)
     except ToolError as exc:
         status, code, msg = mapear_excepcion(exc)
         raise ErrorApi(status, code, msg) from None

@@ -92,6 +92,8 @@ def construir_tools(servicios: ServiciosNegocio) -> dict[str, Callable[[dict], A
             dict(args),
             args.get("confirmation_token"),
             args.get("high_amount_token"),
+            confianza_ocr=args.get("confianza_ocr"),
+            contenido_sospechoso=args.get("contenido_sospechoso"),
         )
         return {"id": tx_id, "status": "registrada"}
 
