@@ -14,15 +14,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-TRADUCCION_DIFICULTAD: dict[str, str] = {
-    "": "limpia",
-    "clean": "limpia",
-    "blurry": "borrosa",
-    "tilted": "inclinada",
-    "discount": "multiples_descuentos",
-    "duplicate": "duplicada",
-    "injection": "inyeccion",
-}
+from eval.constantes import TRADUCCION_DIFICULTAD  # noqa: F401
 
 
 def _total(valor: str) -> Any:

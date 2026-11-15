@@ -9,18 +9,8 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-ESTADOS_FINALES: tuple[str, ...] = ("registrada", "rechazada", "usuario_rechazo", "limite", "error")
-CAMPOS: tuple[str, ...] = (
-    "sistema", "ruta_factura", "tokens_entrada", "tokens_salida",
-    "duracion_ms", "estado_final", "registro_en_bd",
-)
-_ESTADO_AGENTE = {
-    "success": "registrada",
-    "validation_error": "rechazada",
-    "user_abort": "usuario_rechazo",
-    "step_limit": "limite",
-    "token_limit": "limite",
-}
+from baseline.constantes import CAMPOS, ESTADOS_FINALES, SISTEMA_ARQUITECTURA  # noqa: F401
+from baseline.constantes import ESTADO_AGENTE_A_FINAL as _ESTADO_AGENTE
 
 
 def _es_entero(v: object) -> bool:
@@ -88,7 +78,7 @@ def desde_traza_agente(pipeline_result: Any, duracion_ms: float, registro_en_bd:
     traza = pipeline_result.trace
     estado = _ESTADO_AGENTE.get(pipeline_result.status, "error")
     return TrazaComun(
-        sistema="arquitectura_mcp",
+        sistema=SISTEMA_ARQUITECTURA,
         ruta_factura=str(traza.image_path),
         tokens_entrada=int(getattr(traza, "tokens_entrada", 0) or 0),
         tokens_salida=int(getattr(traza, "tokens_salida", 0) or 0),

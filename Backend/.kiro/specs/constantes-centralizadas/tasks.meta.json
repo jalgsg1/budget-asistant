@@ -1,0 +1,249 @@
+{
+  "pbtResults": {
+    "5.4 Agregar la prueba de definición única de `AUTO_TOKEN_PREFIX`": {
+      "status": "passed",
+      "lastRunTimestamp": 1794692225191
+    }
+  },
+  "executionHistory": {
+    "1.1 Crear `finanzas_mcp/constantes.py` y redirigir los módulos de negocio": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097023
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691102472
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691246992
+      }
+    ],
+    "2.1 Crear `agent/constantes.py` y redirigir `agent/hitl.py` y `agent/contenido_sospechoso.py`": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097281
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691250167
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691407153
+      }
+    ],
+    "2.2 Usar las constantes de estado y razón en `agent/agent.py`, `agent/main.py` y `agent/tracer.py`": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097363
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691409456
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691602967
+      }
+    ],
+    "3.1 Crear `eval/constantes.py` y redirigir `golden_set.py`, `convertir_labels.py`, `metricas.py` y `anotaciones.py`": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097457
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691103283
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691247633
+      }
+    ],
+    "3.2 Redirigir `eval/runner.py`, `eval/benchmark.py` y `eval/generar_adversarial.py`": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097540
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691251070
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691403641
+      }
+    ],
+    "4.1 Crear `baseline/constantes.py` independiente y redirigir los módulos de baseline": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097635
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691103926
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691245980
+      }
+    ],
+    "5.1 Crear el archivo de prueba con la existencia de los archivos y los valores originales": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097770
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691605646
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691801533
+      }
+    ],
+    "5.2 Agregar la prueba de alias del mismo objeto": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097866
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691804081
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691962920
+      }
+    ],
+    "5.3 Agregar las pruebas AST de aislamiento de dependencias": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691097967
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691966170
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692037954
+      }
+    ],
+    "5.4 Agregar la prueba de definición única de `AUTO_TOKEN_PREFIX`": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691098151
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692041114
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692232034
+      }
+    ],
+    "5.5 Agregar la prueba de type hints y encoding en los archivos de constantes": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691098344
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692235450
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692326075
+      }
+    ],
+    "6. Checkpoint final - Suite completa": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691098463
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692329302
+      },
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692399336
+      }
+    ],
+    "4. Centralizar constantes de baseline": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691246102
+      }
+    ],
+    "1. Centralizar constantes de finanzas_mcp": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691247062
+      }
+    ],
+    "3. Centralizar constantes de eval": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691403735
+      }
+    ],
+    "2. Centralizar constantes de agent": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794691603119
+      }
+    ],
+    "5. Prueba `tests/test_constantes.py`": [
+      {
+        "executionId": "5c7d52c8-f659-4d3a-b2ea-c159c760a4a6",
+        "chatSessionId": "sess_7cf86cf0-2554-4ac7-81ea-295f00ad8de1",
+        "timestamp": 1794692326210
+      }
+    ]
+  }
+}

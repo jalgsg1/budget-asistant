@@ -37,6 +37,22 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional, Protocol
 
+from agent.constantes import (
+    ALLOWED_FIELDS as _ALLOWED_FIELDS,
+    ESTADO_ABORTO_USUARIO,
+    ESTADO_ERROR_VALIDACION,
+    ESTADO_EXITO,
+    ESTADO_LIMITE_PASOS,
+    ESTADO_LIMITE_TOKENS,
+    OCR_REQUIRED_FIELDS,
+    OPTIONAL_FIELDS as _OPTIONAL_FIELDS,
+    RAZON_EXITO,
+    RAZON_FALLO_VALIDACION,
+    RAZON_LIMITE_PASOS,
+    RAZON_LIMITE_TOKENS,
+    RAZON_RECHAZO_USUARIO,
+    REQUIRED_FIELDS as _REQUIRED_FIELDS,
+)
 from agent.contenido_sospechoso import ResultadoEscaneo, escanear
 from agent.hitl import (
     PROMPT_ALERTAS,
@@ -212,11 +228,11 @@ def normalize_tool_result(raw: Any) -> Any:
 # Constantes del pipeline
 # ---------------------------------------------------------------------------
 
-REQUIRED_FIELDS = ("comercio", "fecha", "total", "moneda", "categoria")
-OPTIONAL_FIELDS = ("subtotal", "iva", "descripcion")
-ALLOWED_FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS
+REQUIRED_FIELDS = _REQUIRED_FIELDS
+OPTIONAL_FIELDS = _OPTIONAL_FIELDS
+ALLOWED_FIELDS = _ALLOWED_FIELDS
 _NUMERIC = {"total", "subtotal", "iva"}
-_OCR_REQUIRED = ("comercio", "fecha", "total", "moneda")
+_OCR_REQUIRED = OCR_REQUIRED_FIELDS
 _MAX_TEXT = 200
 _YES = {"si", "sí", "s", "yes", "y"}
 _NO = {"no", "n", "cancelar", "cancel"}
@@ -276,26 +292,26 @@ class InvoicePipeline:
         self._datos_extraidos = {}
         self._n_duplicados = 0
         self._token_auto = False
-        status, reason, message, tx_id, datos = "validation_error", "validation_failure", "", None, {}
+        status, reason, message, tx_id, datos = ESTADO_ERROR_VALIDACION, RAZON_FALLO_VALIDACION, "", None, {}
         try:
             datos = self._step1_extraer(image_path)
             self._step2_3_validar(datos)
             self._step4_duplicados(datos)
             token, high_token = self._step5_confirmar(datos)
             tx_id = self._step6_registrar(datos, token, high_token)
-            status, reason = "success", "success"
+            status, reason = ESTADO_EXITO, RAZON_EXITO
             message = f"Transacción registrada con id={tx_id}."
         except StepLimitError as exc:
-            status, reason, message = "step_limit", "step_limit", str(exc)
+            status, reason, message = ESTADO_LIMITE_PASOS, RAZON_LIMITE_PASOS, str(exc)
         except TokenLimitError as exc:
-            status, reason, message = "token_limit", "token_limit", str(exc)
+            status, reason, message = ESTADO_LIMITE_TOKENS, RAZON_LIMITE_TOKENS, str(exc)
         except _Stop as stop:
             reason, message = stop.reason, stop.message
-            status = "user_abort" if reason == "user_rejection" else "validation_error"
+            status = ESTADO_ABORTO_USUARIO if reason == RAZON_RECHAZO_USUARIO else ESTADO_ERROR_VALIDACION
         except PolicyError as exc:
-            reason, message = "validation_failure", f"Política: {exc}"
+            reason, message = RAZON_FALLO_VALIDACION, f"Política: {exc}"
 
-        if status != "success":
+        if status != ESTADO_EXITO:
             message = f"{message} La transacción NO fue guardada."
         self._log("termination", "", message, None)
         self._trace.final_status = status
@@ -422,11 +438,11 @@ class InvoicePipeline:
         )
         if ans is None:
             if datos.get(f) is None:
-                raise _Stop("validation_failure", f"No se aclaró el campo '{f}'.")
+                raise _Stop(RAZON_FALLO_VALIDACION, f"No se aclaró el campo '{f}'.")
             return
         value = _coerce(f, ans)
         if value is None:
-            raise _Stop("validation_failure", f"Valor inválido para '{f}'.")
+            raise _Stop(RAZON_FALLO_VALIDACION, f"Valor inválido para '{f}'.")
         datos[f] = value
 
     def _escanear(self, text: str) -> None:
@@ -454,7 +470,7 @@ class InvoicePipeline:
         if code == "MISSING_FIELDS":
             missing = [f for f in REQUIRED_FIELDS if datos.get(f) in (None, "")]
             if not missing:
-                raise _Stop("validation_failure", f"Validación fallida: {err.message}")
+                raise _Stop(RAZON_FALLO_VALIDACION, f"Validación fallida: {err.message}")
             for f in missing:
                 self._ask_field(datos, f)
         elif code == "INVALID_CURRENCY":
@@ -466,7 +482,7 @@ class InvoicePipeline:
         elif code == "ARITHMETIC_INCONSISTENCY":
             self._fix_arithmetic(datos)
         else:
-            raise _Stop("validation_failure", f"Validación fallida: {err.message or code}")
+            raise _Stop(RAZON_FALLO_VALIDACION, f"Validación fallida: {err.message or code}")
 
     def _ask_field(self, datos: dict, f: str, hint: str = "") -> None:
         if f == "categoria":
@@ -474,7 +490,7 @@ class InvoicePipeline:
         ans = self._ask(f"{hint or 'Falta el campo'} '{f}': ", "ask_field")
         value = _coerce(f, ans) if ans else None
         if value is None:
-            raise _Stop("validation_failure", f"No se obtuvo un valor válido para '{f}'.")
+            raise _Stop(RAZON_FALLO_VALIDACION, f"No se obtuvo un valor válido para '{f}'.")
         datos[f] = value
 
     def _select_category(self, datos: dict) -> None:
@@ -487,7 +503,7 @@ class InvoicePipeline:
             else:
                 chosen = next((c for c in CLOSED_CATEGORY_LIST if c.lower() == ans.lower()), None)
         if chosen is None:
-            raise _Stop("validation_failure", "No se seleccionó una categoría válida.")
+            raise _Stop(RAZON_FALLO_VALIDACION, "No se seleccionó una categoría válida.")
         datos["categoria"] = chosen
 
     def _fix_arithmetic(self, datos: dict) -> None:
@@ -499,7 +515,7 @@ class InvoicePipeline:
         )
         target = ans.lower() if ans else None
         if target not in ("subtotal", "iva", "total"):
-            raise _Stop("validation_failure", "No se aclaró la incoherencia aritmética.")
+            raise _Stop(RAZON_FALLO_VALIDACION, "No se aclaró la incoherencia aritmética.")
         self._ask_field(datos, target, "Valor correcto para")
 
     # -- Paso 4: Duplicados --------------------------------------------------
@@ -524,7 +540,7 @@ class InvoicePipeline:
         )
         if not self._confirm(f"Posibles duplicados:\n{lines}\n¿Registrar de todos modos? (si/no): ",
                              "duplicate_confirmation"):
-            raise _Stop("user_rejection", "El usuario no confirmó continuar tras detectar duplicados.")
+            raise _Stop(RAZON_RECHAZO_USUARIO, "El usuario no confirmó continuar tras detectar duplicados.")
         return True
 
     # -- Paso 5: Confirmación ------------------------------------------------
@@ -572,7 +588,7 @@ class InvoicePipeline:
             high_token = self._pedir_monto_alto(datos, threshold)
         token = self._token(f"Escriba el {PROMPT_REGISTRAR} (o 'no'): ", "confirmation_token")
         if token is None:
-            raise _Stop("user_rejection", "No se proporcionó el token de confirmación.")
+            raise _Stop(RAZON_RECHAZO_USUARIO, "No se proporcionó el token de confirmación.")
         return token, high_token
 
     def _confirmar_alertas(self, datos: dict, alertas: tuple[str, ...]) -> tuple[str, Optional[str]]:
@@ -585,7 +601,7 @@ class InvoicePipeline:
             "hitl_alerts_confirmation",
         )
         if token is None:
-            raise _Stop("user_rejection", "El usuario rechazó o no respondió la solicitud de Alertas HITL.")
+            raise _Stop(RAZON_RECHAZO_USUARIO, "El usuario rechazó o no respondió la solicitud de Alertas HITL.")
         high_token = None
         if "HIGH_AMOUNT" in alertas:
             threshold = self._policy.high_amount_threshold.get(datos["moneda"])
@@ -599,7 +615,7 @@ class InvoicePipeline:
             "high_amount_confirmation",
         )
         if high_token is None:
-            raise _Stop("user_rejection", "No se proporcionó la confirmación de monto alto.")
+            raise _Stop(RAZON_RECHAZO_USUARIO, "No se proporcionó la confirmación de monto alto.")
         return high_token
 
     # -- Paso 6: Registrar ---------------------------------------------------
@@ -616,7 +632,7 @@ class InvoicePipeline:
         try:
             res = self._call("registrar_transaccion", args, confirmed=True)
         except ToolError as err:
-            raise _Stop("validation_failure", f"El servidor rechazó el registro: {err.message or err.code}")
+            raise _Stop(RAZON_FALLO_VALIDACION, f"El servidor rechazó el registro: {err.message or err.code}")
         return res.get("id") if isinstance(res, dict) else None
 
 

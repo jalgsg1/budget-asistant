@@ -11,23 +11,10 @@ No importa `mcp`, `sys.stdin` ni `sys.stdout`.
 
 from __future__ import annotations
 
+from finanzas_mcp.constantes import CATEGORIAS_CERRADAS
+
 #: Lista cerrada de categorías de gasto (ClosedCategoryList).
 #: Solo los valores presentes en esta lista son aceptados por `validar_categoria`
 #: y por `registrar_transaccion` en el servidor finanzas-mcp (Requisito 7.1).
-CLOSED_CATEGORY_LIST: list[str] = [
-    "Alimentación",
-    "Transporte",
-    "Salud",
-    "Educación",
-    "Entretenimiento",
-    "Servicios",
-    "Tecnología",
-    "Ropa",
-    "Hogar",
-    "Viajes",
-    "Restaurantes",
-    "Deportes",
-    "Mascotas",
-    "Seguros",
-    "Otros",
-]
+#: Alias del mismo objeto definido en ``finanzas_mcp.constantes``.
+CLOSED_CATEGORY_LIST: list[str] = CATEGORIAS_CERRADAS

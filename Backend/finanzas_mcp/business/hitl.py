@@ -11,12 +11,13 @@ import math
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
-MODOS_HITL: tuple[str, ...] = ("siempre", "adaptativo")
-AUTO_TOKEN_PREFIX: str = "auto:"
-
-CODIGO_AUTO_NO_PERMITIDO: str = "AUTOMATIC_TOKEN_NOT_ALLOWED"
-CODIGO_MONTO_ALTO: str = "HIGH_AMOUNT_CONFIRMATION_REQUIRED"
-CODIGO_HUMANO: str = "HUMAN_CONFIRMATION_REQUIRED"
+from finanzas_mcp.constantes import (  # noqa: F401
+    AUTO_TOKEN_PREFIX,
+    CODIGO_AUTO_NO_PERMITIDO,
+    CODIGO_HUMANO,
+    CODIGO_MONTO_ALTO,
+    MODOS_HITL,
+)
 
 
 class PoliticaHitlError(ValueError):

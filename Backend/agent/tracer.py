@@ -20,6 +20,8 @@ import sys
 from dataclasses import asdict, dataclass, field
 from typing import Optional
 
+from agent.constantes import ESTADO_EXITO
+
 
 # ---------------------------------------------------------------------------
 # Data models
@@ -98,7 +100,7 @@ class Trace:
     user_id: str
     image_path: str
     entries: list[TraceEntry] = field(default_factory=list)
-    final_status: str = "success"
+    final_status: str = ESTADO_EXITO
     termination_reason: Optional[str] = None
     created_at: str = ""
     transaction_id: Optional[int] = None

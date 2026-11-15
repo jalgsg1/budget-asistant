@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from typing import Callable, Sequence
 
 from baseline.bd_temporal import BDTemporal
+from baseline.constantes import HERRAMIENTA_INSERTAR_NOMBRE
 from baseline.llm import ClienteLlm, ConfigLlmError, RespuestaLlm, resolver_config_llm
 from baseline.traza_comun import TrazaComun, escribir_traza
 
@@ -30,7 +31,7 @@ USER_ID_BASELINE = "baseline"
 TIMEOUT_S = 60.0
 
 HERRAMIENTA_INSERTAR: dict = {
-    "name": "insertar_transaccion",
+    "name": HERRAMIENTA_INSERTAR_NOMBRE,
     "description": (
         "Inserta una transacción de gasto en la base de datos con los datos "
         "de la factura."
@@ -138,7 +139,7 @@ class ProcesadorBaseline:
         acum["entrada"] = int(resp.tokens_entrada)
         acum["salida"] = int(resp.tokens_salida)
         llamadas = [c for c in resp.llamadas_herramienta
-                    if c.get("nombre") == "insertar_transaccion"]
+                    if c.get("nombre") == HERRAMIENTA_INSERTAR_NOMBRE]
         if not llamadas:
             return "rechazada"
         for c in llamadas:

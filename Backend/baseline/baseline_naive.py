@@ -6,8 +6,9 @@ import sys
 from typing import Sequence
 
 from baseline._comun import main_baseline
+from baseline.constantes import SISTEMA_NAIVE
 
-NOMBRE = "baseline_naive"
+NOMBRE = SISTEMA_NAIVE
 
 SYSTEM_PROMPT_NAIVE = (
     "Extrae los campos de la factura (comercio, fecha, total, moneda, categoria, "

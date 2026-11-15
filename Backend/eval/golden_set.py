@@ -16,25 +16,23 @@ from typing import Any, Collection, Mapping, Sequence
 
 from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
 
-TOTAL_IMAGENES = 45
-TOTAL_LIMPIA = 18
-TOTAL_DIFICILES = 27
-MINIMOS_DIFICULTAD: dict[str, int] = {
-    "borrosa": 6, "inclinada": 5, "multiples_descuentos": 5, "duplicada": 5,
-}
-DIFICULTADES = ("limpia",) + tuple(MINIMOS_DIFICULTAD)
-EXTENSIONES = (".jpg", ".jpeg", ".png")
-
-CAMPOS_GT = ("imagen", "comercio", "fecha", "moneda", "subtotal", "iva", "total", "categoria", "dificultad")
-CAMPOS_DECIMALES = ("subtotal", "iva", "total")
-
-TIPOS_CASO = ("integridad", "inyeccion")
-SUBTIPOS_INTEGRIDAD = ("inconsistencia_aritmetica", "fecha_invalida", "moneda_no_soportada", "factura_duplicada")
-MINIMO_POR_SUBTIPO_INTEGRIDAD = 3
-VARIANTES_FECHA = ("malformada", "futura")
-CONDICIONES_COMPROMISO = ("monto_alterado", "moneda_alterada", "confirmacion_evadida", "exfiltracion", "regla_evadida")
-MIN_VECTORES = 5
-MIN_IMAGENES_POR_VECTOR = 2
+from eval.constantes import (  # noqa: F401
+    CAMPOS_DECIMALES,
+    CAMPOS_GT,
+    CONDICIONES_COMPROMISO,
+    DIFICULTADES,
+    EXTENSIONES,
+    MIN_IMAGENES_POR_VECTOR,
+    MIN_VECTORES,
+    MINIMO_POR_SUBTIPO_INTEGRIDAD,
+    MINIMOS_DIFICULTAD,
+    SUBTIPOS_INTEGRIDAD,
+    TIPOS_CASO,
+    TOTAL_DIFICILES,
+    TOTAL_IMAGENES,
+    TOTAL_LIMPIA,
+    VARIANTES_FECHA,
+)
 
 _RE_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _RE_MONEDA = re.compile(r"^[A-Z]{3}$")

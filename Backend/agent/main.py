@@ -28,6 +28,13 @@ from contextlib import AsyncExitStack
 from pathlib import Path
 from typing import Any, Callable, Mapping, Optional, Sequence
 
+from agent.constantes import (
+    ESTADO_ABORTO_USUARIO,
+    ESTADO_ERROR_VALIDACION,
+    ESTADO_EXITO,
+    ESTADO_LIMITE_PASOS,
+    ESTADO_LIMITE_TOKENS,
+)
 from agent.agent import InvoicePipeline, PipelineResult, Policy, load_policy
 from finanzas_mcp.business.hitl import PoliticaHitlError
 
@@ -36,8 +43,8 @@ DEFAULT_POLICY_PATH = BACKEND_DIR / "politica.json"
 DEFAULT_SKILL_PATH = BACKEND_DIR / "agent" / "SKILL.md"
 DEFAULT_TRACES_DIR = BACKEND_DIR / "traces"
 
-_EXIT_CODES = {"success": 0, "validation_error": 1, "user_abort": 2,
-               "step_limit": 3, "token_limit": 3}
+_EXIT_CODES = {ESTADO_EXITO: 0, ESTADO_ERROR_VALIDACION: 1, ESTADO_ABORTO_USUARIO: 2,
+               ESTADO_LIMITE_PASOS: 3, ESTADO_LIMITE_TOKENS: 3}
 
 
 #: código de salida por política HITL inválida (antes de procesar documentos)

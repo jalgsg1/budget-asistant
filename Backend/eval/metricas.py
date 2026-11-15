@@ -12,9 +12,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from finanzas_mcp.business.factura import evaluar_factura
 
-CAMPOS_EXACTITUD: tuple[str, ...] = ("comercio", "fecha", "moneda", "total", "categoria")
-UMBRALES_MONTO_DEFECTO: dict[str, float] = {"CRC": 50000.0, "USD": 100.0}
-PARTICIONES: tuple[str, ...] = ("limpia", "adversarial")
+from eval.constantes import CAMPOS_EXACTITUD, PARTICIONES, UMBRALES_MONTO_DEFECTO  # noqa: F401
 
 
 @dataclass(frozen=True)

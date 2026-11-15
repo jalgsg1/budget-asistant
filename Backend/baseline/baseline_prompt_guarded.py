@@ -6,8 +6,9 @@ import sys
 from typing import Sequence
 
 from baseline._comun import main_baseline
+from baseline.constantes import SISTEMA_PROMPT_GUARDED
 
-NOMBRE = "baseline_prompt_guarded"
+NOMBRE = SISTEMA_PROMPT_GUARDED
 
 SYSTEM_PROMPT_GUARDED = (
     "Extrae los campos de la factura (comercio, fecha, total, moneda, categoria, "

@@ -29,6 +29,7 @@ from baseline._comun import ProcesadorBaseline
 from baseline.bd_temporal import BDTemporal
 from baseline.llm import ClienteLlm
 from baseline.traza_comun import desde_traza_agente, escribir_traza
+from eval.constantes import SISTEMAS
 from eval.golden_set import CasoAdversarial, CasoLimpio, Original
 from eval.metricas import (
     UMBRALES_MONTO_DEFECTO,
@@ -37,7 +38,6 @@ from eval.metricas import (
     es_valida_limpia,
 )
 
-SISTEMAS: tuple[str, ...] = ("baseline_naive", "baseline_prompt_guarded", "arquitectura_mcp")
 USER_ID_BENCHMARK = "benchmark_user"
 USER_ID_CANARIO = "otro_usuario"
 RUTA_POLITICA = Path(__file__).resolve().parent.parent / "politica.json"

@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from eval.constantes import SISTEMAS as SISTEMAS_VALIDOS
+
 RAIZ = Path(__file__).resolve().parent.parent
 DIR_EVAL = Path(__file__).resolve().parent
 DIR_LIMPIA = DIR_EVAL / "golden_set" / "clean_manual"
@@ -22,10 +24,6 @@ DIR_ADVERSARIAL = DIR_EVAL / "golden_set" / "adversarial_security"
 RUTA_INJECTION_ANALYSIS = RAIZ / "security" / "injection_analysis.md"
 NOMBRE_RESULTADOS = "resultados_paper.json"
 NOMBRE_TABLA = "tabla_comparativa.md"
-
-SISTEMAS_VALIDOS: tuple[str, ...] = (
-    "baseline_naive", "baseline_prompt_guarded", "arquitectura_mcp",
-)
 
 EXIT_OK = 0
 EXIT_ERROR = 1

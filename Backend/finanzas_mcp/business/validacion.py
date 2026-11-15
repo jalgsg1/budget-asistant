@@ -22,20 +22,15 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
+from finanzas_mcp.constantes import CAMPOS_OBLIGATORIOS, MONEDAS_VALIDAS
 from finanzas_mcp.models import ValidationResult
 
 # ---------------------------------------------------------------------------
-# Constantes internas
+# Constantes internas (alias de finanzas_mcp.constantes)
 # ---------------------------------------------------------------------------
 
-_MONEDAS_VALIDAS: frozenset[str] = frozenset({"CRC", "USD"})
-_CAMPOS_OBLIGATORIOS: tuple[str, ...] = (
-    "comercio",
-    "fecha",
-    "total",
-    "moneda",
-    "categoria",
-)
+_MONEDAS_VALIDAS: frozenset[str] = MONEDAS_VALIDAS
+_CAMPOS_OBLIGATORIOS: tuple[str, ...] = CAMPOS_OBLIGATORIOS
 
 
 # ---------------------------------------------------------------------------

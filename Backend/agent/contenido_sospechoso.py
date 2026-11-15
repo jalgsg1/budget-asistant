@@ -8,14 +8,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-CATEGORIAS: tuple[str, ...] = (
-    "verbo_instruccion",
-    "override_rol",
-    "ignorar_instrucciones",
-    "datos_otros_usuarios",
-    "payload_codificado",
-)
-MAX_CARACTERES: int = 20_000
+from agent.constantes import CATEGORIAS_CONTENIDO_SOSPECHOSO, MAX_CARACTERES
+
+CATEGORIAS: tuple[str, ...] = CATEGORIAS_CONTENIDO_SOSPECHOSO
 
 
 @dataclass(frozen=True)

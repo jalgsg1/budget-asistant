@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 from typing import Any, Mapping, Sequence
 
-CAMPOS_ACUERDO: tuple[str, ...] = ("comercio", "fecha", "total", "moneda", "subtotal", "iva")
+from eval.constantes import CAMPOS_ACUERDO  # noqa: F401
 
 
 def _normalizar(valor: Any, numerico: bool = False) -> str:

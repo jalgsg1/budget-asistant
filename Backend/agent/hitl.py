@@ -9,29 +9,20 @@ import uuid
 from dataclasses import dataclass
 from typing import Mapping, Optional, Sequence
 
-ALERTAS: tuple[str, ...] = (
-    "LOW_OCR_CONFIDENCE",
-    "HIGH_AMOUNT",
-    "ARITHMETIC_MISMATCH",
-    "POSSIBLE_DUPLICATE",
-    "SUSPICIOUS_CONTENT",
+from agent.constantes import (  # noqa: F401
+    ALERTAS,
+    AUTO_TOKEN_PREFIX,
+    CAMPOS_REQUERIDOS,
+    MAX_LONGITUD_RAZON,
+    MAX_LONGITUD_REGLA,
+    MAX_REGLAS,
+    PROMPT_ALERTAS,
+    PROMPT_DUPLICADOS,
+    PROMPT_MONTO_ALTO,
+    PROMPT_REGISTRAR,
+    RAZON_LIMPIA,
+    RAZON_SIEMPRE,
 )
-
-AUTO_TOKEN_PREFIX = "auto:"
-CAMPOS_REQUERIDOS: tuple[str, ...] = ("comercio", "fecha", "total", "moneda")
-
-MAX_REGLAS = 50
-MAX_LONGITUD_REGLA = 100
-MAX_LONGITUD_RAZON = 500
-
-RAZON_SIEMPRE = "modo_hitl=siempre"
-RAZON_LIMPIA = "Factura_Limpia: ninguna Alerta_HITL aplica."
-
-# Subcadenas que usa api_pruebas.batch.AutoConfirmIO para responder.
-PROMPT_REGISTRAR = "token de confirmación para registrar"
-PROMPT_MONTO_ALTO = "token de confirmación de monto alto"
-PROMPT_DUPLICADOS = "Posibles duplicados"
-PROMPT_ALERTAS = "Alertas HITL"
 
 
 @dataclass(frozen=True)
