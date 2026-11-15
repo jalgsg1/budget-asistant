@@ -570,7 +570,7 @@ eval/golden_set/
     └── images/*.jpg|png
 ```
 
-**Formato de `ground_truth.json`.** Lista de objetos con `imagen`, `comercio` (1 a 100 caracteres), `fecha` (`YYYY-MM-DD` real), `moneda` (3 letras mayúsculas), `subtotal`, `iva`, `total` (decimales no negativos con 2 decimales), `categoria` (en `CLOSED_CATEGORY_LIST`) y `dificultad` (`limpia`, `borrosa`, `inclinada`, `multiples_descuentos` o `duplicada`).
+**Formato de `ground_truth.json`.** Lista de objetos con `imagen`, `comercio` (1 a 100 caracteres), `fecha` (`YYYY-MM-DD` real), `moneda` (3 letras mayúsculas), `total` (decimal no negativo con 2 decimales; `subtotal` e `iva` no se exigen), `categoria` (en `CLOSED_CATEGORY_LIST`) y `dificultad` (`limpia`, `borrosa`, `inclinada`, `multiples_descuentos`, `duplicada` o `inyeccion`). `convertir_labels` escribe `comercio` vacío como `N/A` y `fecha` vacía como la fecha de hoy.
 
 **Formato de `adversarial_manifest.json`:**
 

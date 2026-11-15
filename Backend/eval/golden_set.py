@@ -51,8 +51,6 @@ class CasoLimpio:
     comercio: str
     fecha: str
     moneda: str
-    subtotal: Decimal
-    iva: Decimal
     total: Decimal
     categoria: str
     dificultad: str
@@ -241,7 +239,7 @@ def cargar_particion_limpia(directorio: Path) -> list[CasoLimpio]:
         casos.append(CasoLimpio(
             imagen=nombre, ruta=directorio / "images" / nombre,
             comercio=e["comercio"], fecha=e["fecha"], moneda=e["moneda"],
-            subtotal=Decimal(str(e["subtotal"])), iva=Decimal(str(e["iva"])), total=Decimal(str(e["total"])),
+            total=Decimal(str(e["total"])),
             categoria=e["categoria"], dificultad=e["dificultad"],
         ))
     return sorted(casos, key=lambda c: c.imagen)

@@ -91,7 +91,7 @@ def items_limpios(casos: Sequence[CasoLimpio], limite: int | None = None) -> lis
         c = por_nombre[nombre]
         gt = {
             "imagen": c.imagen, "comercio": c.comercio, "fecha": c.fecha, "moneda": c.moneda,
-            "subtotal": float(c.subtotal), "iva": float(c.iva), "total": float(c.total),
+            "total": float(c.total),
             "categoria": c.categoria, "dificultad": c.dificultad,
         }
         items.append(ItemEjecucion(

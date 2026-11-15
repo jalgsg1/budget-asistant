@@ -27,7 +27,7 @@ DIFS = ["limpia", "borrosa", "inclinada", "multiples_descuentos", "duplicada"]
 def _entrada(nombre, cat="x"):
     return {
         "imagen": nombre, "comercio": "Super Central", "fecha": "2024-02-29", "moneda": "CRC",
-        "subtotal": "100.00", "iva": 13, "total": 113.0,
+        "total": 113.0,
         "categoria": sorted(CLOSED_CATEGORY_LIST)[0], "dificultad": "limpia",
     }
 
@@ -36,11 +36,11 @@ def _entrada(nombre, cat="x"):
 INVALIDOS = [
     ("fecha", "2023-02-29"), ("fecha", "2024-13-01"), ("fecha", "15/01/2024"),
     ("moneda", "crc"), ("moneda", "CR"), ("moneda", "CRCC"),
-    ("total", -1.0), ("subtotal", "10.123"), ("iva", "-0.01"), ("total", "abc"),
+    ("total", -1.0), ("total", "10.123"), ("total", "abc"),
     ("categoria", "NoExiste"), ("dificultad", "otra"),
     ("comercio", "x" * 101), ("comercio", ""),
 ]
-CAMPOS_OBLIG = ["comercio", "fecha", "moneda", "subtotal", "iva", "total", "categoria", "dificultad"]
+CAMPOS_OBLIG = ["comercio", "fecha", "moneda", "total", "categoria", "dificultad"]
 
 
 @st.composite

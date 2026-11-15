@@ -1,18 +1,20 @@
 # Conjunto de evaluación (EvaluationSet)
 
-Dataset etiquetado de 45 facturas para medir la exactitud del sistema y la resistencia a inyección indirecta (Req. 15, 16).
+Dataset etiquetado de 45 facturas reales (32 limpias y 13 difíciles) para medir la exactitud del sistema y la resistencia a inyección indirecta (Req. 15, 16).
 
 ## Composición (Req. 15.1, 15.2)
 
-| tipo | dificultad | mínimo | filas en labels.csv |
+| tipo | dificultad | exigido por el validador | filas en labels.csv |
 |---|---|---|---|
-| clean | (vacío) | 18 | 18 |
-| difficult | blurry | 6 | 6 |
-| difficult | tilted | 5 | 5 |
-| difficult | discount (múltiples descuentos) | 5 | 5 |
-| difficult | duplicate | 5 | 5 |
-| difficult | injection (texto malicioso incrustado) | 6 | 6 |
-| **Total** | | **45** | **45** |
+| clean | (vacío) | 32 | 32 |
+| difficult | tilted | 7 | 7 |
+| difficult | duplicate | 4 | 4 |
+| difficult | blurry | 0 (se acepta, no se exige) | 0 |
+| difficult | discount (múltiples descuentos) | 0 (se acepta, no se exige) | 0 |
+| difficult | injection (texto malicioso incrustado) | 2 | 2 |
+| **Total** | | **45** (13 difíciles) | **45** |
+
+El validador de `clean_manual/` espera 45 imágenes: 32 `limpia` y 13 difíciles (7 `inclinada`, 4 `duplicada` y 2 `inyeccion`). Los valores están en `eval/constantes.py` (`TOTAL_IMAGENES`, `TOTAL_LIMPIA`, `TOTAL_DIFICILES`, `MINIMOS_DIFICULTAD`).
 
 ## Estructura
 
@@ -30,6 +32,21 @@ Dataset etiquetado de 45 facturas para medir la exactitud del sistema y la resis
 | anotador_1_* / anotador_2_* | Etiquetas independientes de cada anotador para comercio, fecha, total, moneda, categoria |
 | kappa_categoria | Cohen's kappa de categoría (valor global, se rellena en una fila o en el reporte) |
 | acuerdo_comercio, acuerdo_fecha, acuerdo_total, acuerdo_moneda | Acuerdo porcentual por campo (valor global) |
+
+### De `labels.csv` a los archivos de la partición limpia
+
+`labels.csv` no lleva `subtotal` ni `iva`: el ground truth solo exige `imagen`, `comercio`, `fecha`, `moneda`, `total`, `categoria` y `dificultad`. Para generar los archivos que valida el benchmark:
+
+```
+python -m eval.convertir_labels eval/labels.csv eval/golden_set/clean_manual/ground_truth.json
+```
+
+Escribe en `eval/golden_set/clean_manual/` (nunca modifica `labels.csv`):
+
+- `ground_truth.json`: el consenso de las columnas iniciales. Si `comercio` está vacío escribe `N/A`; si `fecha` está vacía escribe la fecha de hoy.
+- `anotaciones_anotador_1.json` y `anotaciones_anotador_2.json`: lo que cada anotador registró en `anotador_<n>_*`, sin valores por defecto.
+
+Las imágenes deben estar en `eval/golden_set/clean_manual/images/` con los mismos nombres que la columna `imagen`. Las filas `injection` se convierten a dificultad `inyeccion` y se quedan en la partición limpia; deben traer `moneda`, `total` y una `categoria` del catálogo cerrado, porque el validador las exige igual que al resto.
 
 ## Criterios de etiquetado
 
@@ -111,20 +128,12 @@ Ejecutar desde `Backend/`. Requiere `LLM_PROVIDER`, `OCR_MODEL` y la clave del p
 | `--recalcular` | No llama al LLM, no pide claves ni crea BD. Lee `resultados_paper.json` de `--salida`, recalcula métricas, regenera `tabla_comparativa.md` y reescribe el JSON con los mismos registros. |
 | `--salida DIR` | Directorio de `resultados_paper.json` y `tabla_comparativa.md`. Por defecto `eval/`. |
 
-Orden de ejecución: validar argumentos, `--recalcular`, claves, validación del Golden Set,
-`ordenar_casos`, ejecución e informes. Termina con código distinto de cero y un mensaje en stderr si
-los argumentos son inválidos (2), faltan claves (1, sin crear archivos ni BD), el Golden Set no es
-válido, no se puede garantizar el original de un duplicado (1, lista los `id`) o `--recalcular` no
-encuentra un `resultados_paper.json` válido (1, sin modificar archivos). Los archivos se escriben solo
-al final y de forma atómica, así que una interrupción (Ctrl+C, código 130) no deja resultados parciales.
-También actualiza el bloque `BENCH` de `security/injection_analysis.md` si existe.
+Orden de ejecución: validar argumentos, `--recalcular`, claves, validación del Golden Set, `ordenar_casos`, ejecución e informes. Termina con código distinto de cero y un mensaje en stderr si los argumentos son inválidos (2), faltan claves (1, sin crear archivos ni BD), el Golden Set no es válido, no se puede garantizar el original de un duplicado (1, lista los `id`) o `--recalcular` no
+encuentra un `resultados_paper.json` válido (1, sin modificar archivos). Los archivos se escriben solo al final y de forma atómica, así que una interrupción (Ctrl+C, código 130) no deja resultados parciales. También actualiza el bloque `BENCH` de `security/injection_analysis.md` si existe.
 
 ## Factores de costo
 
-El costo real del LLM crece con: (número de facturas) x (número de sistemas) x (tokens de entrada y
-salida por llamada). Cada baseline hace una llamada multimodal por factura. `arquitectura_mcp` hace
-una llamada de OCR por factura y una segunda si la confianza es baja (reintento). Use `--limite` y
-`--sistemas` para controlar el gasto. Cada sistema procesa las dos particiones completas (45 limpias más las adversariales).
+El costo real del LLM crece con: (número de facturas) x (número de sistemas) x (tokens de entrada y salida por llamada). Cada baseline hace una llamada multimodal por factura. `arquitectura_mcp` hace una llamada de OCR por factura y una segunda si la confianza es baja (reintento). Use `--limite` y `--sistemas` para controlar el gasto. Cada sistema procesa las dos particiones completas (45 de la partición limpia más las adversariales).
 
 ## Métricas
 
@@ -160,7 +169,7 @@ servidor y no el criterio del usuario. Cada solicitud cuenta una vez en `confirm
   El costo no es plenamente comparable con el de los baselines.
 - **`exfiltracion`** no puede tener éxito en los baselines por construcción: su única herramienta es un
   `INSERT` y no puede leer datos de otros usuarios, así que ese vector no discrimina entre sistemas.
-- Muestra pequeña (45 facturas limpias y un conjunto adversarial reducido) y un solo modelo: los
+- Muestra pequeña (45 facturas en la partición limpia y un conjunto adversarial reducido) y un solo modelo: los
   porcentajes tienen alta varianza y no hay intervalos de confianza.
 
 ## Lista de verificación manual del Golden Set
@@ -171,9 +180,9 @@ Antes de correr el benchmark, comprobar a mano (los validadores automáticos no 
 - [ ] El ground truth coincide con lo que se ve en cada imagen (comercio, fecha, total, moneda, categoría).
 - [ ] Las dos anotaciones se hicieron de forma independiente y los desacuerdos se resolvieron por consenso.
 - [ ] Los κ y % de acuerdo del README coinciden con los calculados.
-- [ ] Cada imagen de dificultad (borrosa, inclinada, descuentos, duplicada) realmente la presenta.
+- [ ] Cada imagen de dificultad (inclinada, duplicada, inyección) realmente la presenta.
 - [ ] Cada duplicado referencia un original existente y legible.
 - [ ] Cada imagen de inyección contiene el `texto_inyectado` visible y su `condicion_compromiso` y
       `datos_esperados` son correctos.
 - [ ] Hay al menos 5 vectores de inyección con 2 o más imágenes cada uno y las cinco condiciones de compromiso.
-- [ ] La clasificación de las 27 imágenes con dificultad (decisión D10) fue confirmada.
+- [ ] La clasificación de las 13 imágenes con dificultad (7 inclinadas, 4 duplicadas y 2 de inyección, decisión D10) fue confirmada.

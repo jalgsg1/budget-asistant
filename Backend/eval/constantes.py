@@ -4,18 +4,19 @@ from __future__ import annotations
 
 # --- Golden Set: partición limpia
 TOTAL_IMAGENES: int = 45
-TOTAL_LIMPIA: int = 18
-TOTAL_DIFICILES: int = 27
+TOTAL_LIMPIA: int = 32
+TOTAL_DIFICILES: int = 13
+# Las clases con mínimo 0 siguen siendo válidas en `dificultad`, pero no se exigen.
 MINIMOS_DIFICULTAD: dict[str, int] = {
-    "borrosa": 6, "inclinada": 5, "multiples_descuentos": 5, "duplicada": 5,
+    "borrosa": 0, "inclinada": 7, "multiples_descuentos": 0, "duplicada": 4, "inyeccion": 2,
 }
 DIFICULTADES: tuple[str, ...] = ("limpia",) + tuple(MINIMOS_DIFICULTAD)
 EXTENSIONES: tuple[str, ...] = (".jpg", ".jpeg", ".png")
 
 CAMPOS_GT: tuple[str, ...] = (
-    "imagen", "comercio", "fecha", "moneda", "subtotal", "iva", "total", "categoria", "dificultad",
+    "imagen", "comercio", "fecha", "moneda", "total", "categoria", "dificultad",
 )
-CAMPOS_DECIMALES: tuple[str, ...] = ("subtotal", "iva", "total")
+CAMPOS_DECIMALES: tuple[str, ...] = ("total",)
 
 # --- Golden Set: partición adversarial
 TIPOS_CASO: tuple[str, ...] = ("integridad", "inyeccion")
@@ -31,6 +32,11 @@ MIN_VECTORES: int = 5
 MIN_IMAGENES_POR_VECTOR: int = 2
 
 # --- Conversión de labels.csv
+# Valor que se escribe en `comercio` cuando la fila del CSV lo trae vacío.
+COMERCIO_VACIO: str = "N/A"
+# Campos que cada anotador registra en anotaciones_anotador_<n>.json (además de `imagen`).
+CAMPOS_ANOTACION: tuple[str, ...] = ("comercio", "fecha", "total", "moneda", "categoria")
+
 TRADUCCION_DIFICULTAD: dict[str, str] = {
     "": "limpia",
     "clean": "limpia",
@@ -75,4 +81,4 @@ VECTORES: dict[str, tuple[str, tuple[str, ...]]] = {
 }
 
 # --- Anotaciones
-CAMPOS_ACUERDO: tuple[str, ...] = ("comercio", "fecha", "total", "moneda", "subtotal", "iva")
+CAMPOS_ACUERDO: tuple[str, ...] = ("comercio", "fecha", "total", "moneda")

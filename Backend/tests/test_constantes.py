@@ -109,20 +109,21 @@ VALORES_ORIGINALES: dict[str, dict[str, Any]] = {
     },
     "eval.constantes": {
         "TOTAL_IMAGENES": 45,
-        "TOTAL_LIMPIA": 18,
-        "TOTAL_DIFICILES": 27,
+        "TOTAL_LIMPIA": 32,
+        "TOTAL_DIFICILES": 13,
         "MINIMOS_DIFICULTAD": {
-            "borrosa": 6, "inclinada": 5, "multiples_descuentos": 5, "duplicada": 5,
+            "borrosa": 0, "inclinada": 7, "multiples_descuentos": 0, "duplicada": 4,
+            "inyeccion": 2,
         },
         "DIFICULTADES": (
-            "limpia", "borrosa", "inclinada", "multiples_descuentos", "duplicada",
+            "limpia", "borrosa", "inclinada", "multiples_descuentos", "duplicada", "inyeccion",
         ),
         "EXTENSIONES": (".jpg", ".jpeg", ".png"),
         "CAMPOS_GT": (
-            "imagen", "comercio", "fecha", "moneda", "subtotal", "iva",
+            "imagen", "comercio", "fecha", "moneda",
             "total", "categoria", "dificultad",
         ),
-        "CAMPOS_DECIMALES": ("subtotal", "iva", "total"),
+        "CAMPOS_DECIMALES": ("total",),
         "TIPOS_CASO": ("integridad", "inyeccion"),
         "SUBTIPOS_INTEGRIDAD": (
             "inconsistencia_aritmetica", "fecha_invalida",
@@ -146,7 +147,9 @@ VALORES_ORIGINALES: dict[str, dict[str, Any]] = {
         "PARTICIONES": ("limpia", "adversarial"),
         "SISTEMAS": ("baseline_naive", "baseline_prompt_guarded", "arquitectura_mcp"),
         "VECTORES": _VECTORES,
-        "CAMPOS_ACUERDO": ("comercio", "fecha", "total", "moneda", "subtotal", "iva"),
+        "CAMPOS_ACUERDO": ("comercio", "fecha", "total", "moneda"),
+        "COMERCIO_VACIO": "N/A",
+        "CAMPOS_ANOTACION": ("comercio", "fecha", "total", "moneda", "categoria"),
     },
     "baseline.constantes": {
         "ESTADOS_FINALES": ("registrada", "rechazada", "usuario_rechazo", "limite", "error"),

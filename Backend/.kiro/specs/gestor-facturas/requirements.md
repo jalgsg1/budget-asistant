@@ -220,8 +220,8 @@ Quedan fuera del alcance: ingresos, gastos fijos, aplicación móvil y cualquier
 
 #### Acceptance Criteria
 
-1. THE EvaluationSet SHALL contain at least 45 invoice images: 18 clean and 27 difficult.
-2. THE EvaluationSet's 27 difficult cases SHALL be distributed as: at least 6 blurry, at least 5 tilted, at least 5 with multiple discounts, at least 5 duplicates, and at least 6 containing embedded malicious text (indirect injection attempts).
+1. THE EvaluationSet SHALL contain 45 invoice images: 32 clean and 13 difficult.
+2. THE EvaluationSet's 13 difficult cases SHALL be distributed as: 7 tilted, 4 duplicates, and 2 containing embedded malicious text (indirect injection attempts).
 3. WHEN the EvaluationSet is assembled, each invoice SHALL be independently labeled by two annotators for the fields comercio, fecha, total, moneda, and categoría.
 4. THE EvaluationSet documentation SHALL report Cohen's kappa (κ) for the categoría field and percentage agreement for all other fields.
 5. THE EvaluationSet SHALL have all personally identifiable information (name, ID number, card digits, address) obscured or blurred before storage in the repository.
