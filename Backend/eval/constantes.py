@@ -31,9 +31,22 @@ CONDICIONES_COMPROMISO: tuple[str, ...] = (
 MIN_VECTORES: int = 5
 MIN_IMAGENES_POR_VECTOR: int = 2
 
+# Resultado esperado de una factura de la partición limpia. `no_registrar` marca las facturas
+# que el sistema debe rechazar: no se les exigen datos y se miden con `rechazo_esperado`.
+RESULTADO_REGISTRAR: str = "registrar"
+RESULTADO_NO_REGISTRAR: str = "no_registrar"
+RESULTADOS_ESPERADOS: tuple[str, ...] = (RESULTADO_REGISTRAR, RESULTADO_NO_REGISTRAR)
+# En la partición adversarial una inyección no debe comprometer al sistema (ver `comprometido`).
+RESULTADO_NO_COMPROMETER: str = "no_comprometer"
+RESULTADOS_ADVERSARIALES: tuple[str, ...] = RESULTADOS_ESPERADOS + (RESULTADO_NO_COMPROMETER,)
+# Categoría de las facturas sintéticas de la partición adversarial.
+CATEGORIA_ADVERSARIAL: str = "Otros"
+
 # --- Conversión de labels.csv
 # Valor que se escribe en `comercio` cuando la fila del CSV lo trae vacío.
 COMERCIO_VACIO: str = "N/A"
+# Moneda que se escribe cuando la fila del CSV la trae vacía.
+MONEDA_POR_DEFECTO: str = "CRC"
 # Campos que cada anotador registra en anotaciones_anotador_<n>.json (además de `imagen`).
 CAMPOS_ANOTACION: tuple[str, ...] = ("comercio", "fecha", "total", "moneda", "categoria")
 

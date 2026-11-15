@@ -12,7 +12,8 @@ Escribe, en el directorio del destino indicado:
 Por defecto el destino es `ground_truth_convertido.json` junto al CSV. Para generar los
 archivos listos para validar, pase `eval/golden_set/clean_manual/ground_truth.json`.
 
-Valores por defecto del consenso: `comercio` vacío -> "N/A"; `fecha` vacía -> fecha de hoy.
+Valores por defecto del consenso: `comercio` vacío -> "N/A"; `fecha` vacía -> fecha de hoy;
+`moneda` vacía -> "CRC".
 """
 from __future__ import annotations
 
@@ -24,7 +25,14 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from eval.constantes import CAMPOS_ANOTACION, COMERCIO_VACIO, TRADUCCION_DIFICULTAD  # noqa: F401
+from eval.constantes import (  # noqa: F401
+    CAMPOS_ANOTACION,
+    COMERCIO_VACIO,
+    MONEDA_POR_DEFECTO,
+    RESULTADO_NO_REGISTRAR,
+    RESULTADO_REGISTRAR,
+    TRADUCCION_DIFICULTAD,
+)
 
 
 def _total(valor: str) -> Any:
@@ -40,23 +48,32 @@ def _total(valor: str) -> Any:
 def convertir_filas(filas: Iterable[Mapping[str, str]], hoy: date | None = None) -> list[dict]:
     """Convierte cada fila del CSV a una entrada (una por fila, 100% de las filas).
 
-    Columnas de salida: imagen, comercio, fecha, total, moneda, categoria, dificultad.
+    Columnas de salida: imagen, comercio, fecha, total, moneda, categoria, dificultad,
+    resultado_esperado ("registrar" si la columna del CSV falta o está vacía; "no_registrar"
+    marca una factura que el sistema debe rechazar y no recibe valores por defecto).
     La dificultad se traduce al vocabulario en español (las filas `injection` quedan con
     dificultad "inyeccion"). Un `comercio` vacío se escribe como "N/A" y una `fecha` vacía
-    como la fecha de hoy (`hoy`, por defecto `date.today()`).
+    como la fecha de hoy (`hoy`, por defecto `date.today()`). Una `moneda` vacía se escribe "CRC".
     """
     fecha_defecto = (hoy or date.today()).isoformat()
     salida: list[dict] = []
     for fila in filas:
         dif = (fila.get("dificultad") or "").strip().lower()
+        resultado = (fila.get("resultado_esperado") or "").strip().lower() or RESULTADO_REGISTRAR
+        # Una factura que debe rechazarse conserva los valores tal como vienen: no se usan.
+        rechazo = resultado == RESULTADO_NO_REGISTRAR
+        comercio = (fila.get("comercio") or "").strip()
+        fecha = (fila.get("fecha") or "").strip()
+        moneda = (fila.get("moneda") or "").strip().upper()
         salida.append({
             "imagen": (fila.get("imagen") or "").strip(),
-            "comercio": (fila.get("comercio") or "").strip() or COMERCIO_VACIO,
-            "fecha": (fila.get("fecha") or "").strip() or fecha_defecto,
+            "comercio": comercio if rechazo else comercio or COMERCIO_VACIO,
+            "fecha": fecha if rechazo else fecha or fecha_defecto,
             "total": _total(fila.get("total") or ""),
-            "moneda": (fila.get("moneda") or "").strip().upper(),
+            "moneda": moneda if rechazo else moneda or MONEDA_POR_DEFECTO,
             "categoria": (fila.get("categoria") or "").strip(),
             "dificultad": TRADUCCION_DIFICULTAD.get(dif, dif),
+            "resultado_esperado": resultado,
         })
     return salida
 

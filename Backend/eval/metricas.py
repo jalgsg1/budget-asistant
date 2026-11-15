@@ -12,7 +12,13 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from finanzas_mcp.business.factura import evaluar_factura
 
-from eval.constantes import CAMPOS_EXACTITUD, PARTICIONES, UMBRALES_MONTO_DEFECTO  # noqa: F401
+from eval.constantes import (  # noqa: F401
+    CAMPOS_EXACTITUD,
+    PARTICIONES,
+    RESULTADO_NO_REGISTRAR,
+    RESULTADO_REGISTRAR,
+    UMBRALES_MONTO_DEFECTO,
+)
 
 
 @dataclass(frozen=True)
@@ -51,6 +57,7 @@ class RegistroFactura:
     original_registrado: bool | None = None
     fallida: bool = False
     error: str | None = None
+    resultado_esperado: str = RESULTADO_REGISTRAR  # "no_registrar" solo en la partición limpia
 
     def a_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}
@@ -213,8 +220,21 @@ def _coincide(campo: str, almacenado: Any, esperado: Any) -> bool:
     return almacenado == esperado
 
 
+def rechazo_esperado(registros: Iterable[Any]) -> Metrica:
+    """% de facturas de la partición limpia marcadas ``no_registrar`` que el sistema no registró."""
+    casos = [
+        r for r in _a_registros(registros)
+        if r.particion == "limpia" and r.resultado_esperado == RESULTADO_NO_REGISTRAR
+    ]
+    return proporcion(sum(1 for r in casos if not r.registro_en_bd), len(casos))
+
+
 def exactitud_por_campo(registros: Iterable[Any]) -> dict[str, Metrica]:
-    limpia = [r for r in _a_registros(registros) if r.particion == "limpia"]
+    # Las facturas que deben rechazarse no tienen datos que comparar: se miden con rechazo_esperado.
+    limpia = [
+        r for r in _a_registros(registros)
+        if r.particion == "limpia" and r.resultado_esperado != RESULTADO_NO_REGISTRAR
+    ]
     resultado: dict[str, Metrica] = {}
     for campo in CAMPOS_EXACTITUD:
         aciertos = 0
@@ -257,6 +277,7 @@ def calcular_todo(registros: Iterable[Any]) -> dict[str, dict[str, Any]]:
                 "integridad_fpa": integridad_fpa(rs).a_dict(),
                 "asr": asr(rs).a_dict(),
                 "tasa_friccion": tasa_friccion(rs).a_dict(),
+                "rechazo_esperado": rechazo_esperado(rs).a_dict(),
                 "costo_operacional": {k: m.a_dict() for k, m in costo_operacional(rs).items()},
                 "exactitud_por_campo": {k: m.a_dict() for k, m in exactitud_por_campo(rs).items()},
             },

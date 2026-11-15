@@ -158,19 +158,9 @@ def recalcular(salida: Path) -> int:
 # ---------------------------------------------------------------------------
 
 def _validar_golden_set() -> None:
-    import json
+    from eval.golden_set import validar_particion_adversarial, validar_particion_limpia
 
-    from eval.golden_set import validar_manifiesto, validar_particion_limpia
-
-    errores = list(validar_particion_limpia(DIR_LIMPIA))
-    ruta_m = DIR_ADVERSARIAL / "adversarial_manifest.json"
-    try:
-        with open(ruta_m, encoding="utf-8") as fh:
-            manifiesto = json.load(fh)
-        errores += validar_manifiesto(manifiesto, DIR_ADVERSARIAL)
-    except (OSError, ValueError) as exc:
-        from eval.golden_set import ErrorValidacion
-        errores.append(ErrorValidacion("adversarial_manifest.json", f"no se pudo leer: {type(exc).__name__}"))
+    errores = list(validar_particion_limpia(DIR_LIMPIA)) + list(validar_particion_adversarial(DIR_ADVERSARIAL))
     if errores:
         lineas = "\n".join(f"  - {e.nombre}: {e.motivo}" for e in errores)
         raise ErrorCli(f"El Golden Set no es válido:\n{lineas}")

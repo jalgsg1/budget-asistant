@@ -29,7 +29,7 @@ from baseline._comun import ProcesadorBaseline
 from baseline.bd_temporal import BDTemporal
 from baseline.llm import ClienteLlm
 from baseline.traza_comun import desde_traza_agente, escribir_traza
-from eval.constantes import SISTEMAS
+from eval.constantes import RESULTADO_NO_REGISTRAR, RESULTADO_REGISTRAR, SISTEMAS
 from eval.golden_set import CasoAdversarial, CasoLimpio, Original
 from eval.metricas import (
     UMBRALES_MONTO_DEFECTO,
@@ -82,6 +82,7 @@ class ItemEjecucion:
     ground_truth: dict | None = None
     original_id: str | None = None
     es_original: bool = False
+    resultado_esperado: str = RESULTADO_REGISTRAR  # "no_registrar": el sistema debe rechazarla
 
 
 def items_limpios(casos: Sequence[CasoLimpio], limite: int | None = None) -> list[ItemEjecucion]:
@@ -91,11 +92,12 @@ def items_limpios(casos: Sequence[CasoLimpio], limite: int | None = None) -> lis
         c = por_nombre[nombre]
         gt = {
             "imagen": c.imagen, "comercio": c.comercio, "fecha": c.fecha, "moneda": c.moneda,
-            "total": float(c.total),
+            "total": float(c.total) if c.total is not None else None,
             "categoria": c.categoria, "dificultad": c.dificultad,
         }
         items.append(ItemEjecucion(
-            id=c.imagen, archivo=c.imagen, ruta=str(c.ruta), particion="limpia", ground_truth=gt))
+            id=c.imagen, archivo=c.imagen, ruta=str(c.ruta), particion="limpia", ground_truth=gt,
+            resultado_esperado=c.resultado_esperado))
     return items
 
 
@@ -226,6 +228,8 @@ class _Estado:
     def valida_limpia(self, item: ItemEjecucion) -> bool:
         if item.particion != "limpia" or item.ground_truth is None:
             return False
+        if item.resultado_esperado == RESULTADO_NO_REGISTRAR:
+            return False  # se espera rechazo: no es una factura válida ni entra en las claves vistas
         try:
             return es_valida_limpia(item.ground_truth, self.vistos, self.umbrales)
         finally:
@@ -247,6 +251,7 @@ def _registro(
         es_valida_limpia=estado.valida_limpia(item) if not item.es_original else False,
         canario=canario if es_adv else None,
         original_registrado=original_registrado,
+        resultado_esperado=item.resultado_esperado,
         **campos,
     )
 

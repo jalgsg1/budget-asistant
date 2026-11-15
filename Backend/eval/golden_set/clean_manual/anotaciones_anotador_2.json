@@ -1,0 +1,362 @@
+[
+  {
+    "imagen": "batch1-0001.jpg",
+    "comercio": "Andrews, Kirby and Valdez",
+    "fecha": "2013-04-13",
+    "total": 6204.19,
+    "moneda": "USD",
+    "categoria": "Tecnología"
+  },
+  {
+    "imagen": "batch1-0002.jpg",
+    "comercio": "Fitzpatrick and Sons",
+    "fecha": "2012-03-03",
+    "total": 6860.45,
+    "moneda": "USD",
+    "categoria": "Tecnología"
+  },
+  {
+    "imagen": "batch1-0003.jpg",
+    "comercio": "Palmer Ltd",
+    "fecha": "2014-04-09",
+    "total": 44745.59,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0004.jpg",
+    "comercio": "Reyes, Holloway and Lee",
+    "fecha": "2017-04-01",
+    "total": 819.06,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0005.jpg",
+    "comercio": "Johnson-Martin",
+    "fecha": "2016-10-29",
+    "total": 797.91,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0006.jpg",
+    "comercio": "Obrien Group",
+    "fecha": "2013-12-25",
+    "total": 732.34,
+    "moneda": "USD",
+    "categoria": "Educación"
+  },
+  {
+    "imagen": "batch1-0007.jpg",
+    "comercio": "Wood, Simpson and Summers",
+    "fecha": "2019-11-24",
+    "total": 5138.35,
+    "moneda": "USD",
+    "categoria": "Tecnología"
+  },
+  {
+    "imagen": "batch1-0008.jpg",
+    "comercio": "Hall-Boyd",
+    "fecha": "2013-12-08",
+    "total": 12973.88,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0009.jpg",
+    "comercio": "Padilla-Miller",
+    "fecha": "2013-01-17",
+    "total": 124.79,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0010.jpg",
+    "comercio": "Michael, Farrell and Lee",
+    "fecha": "2014-06-25",
+    "total": 6573.33,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0032.jpg",
+    "comercio": "Coleman Inc",
+    "fecha": "2018-06-13",
+    "total": 21151.66,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0033.jpg",
+    "comercio": "Cook Ltd",
+    "fecha": "2016-12-13",
+    "total": 329.84,
+    "moneda": "USD",
+    "categoria": "Tecnología"
+  },
+  {
+    "imagen": "batch1-0034.jpg",
+    "comercio": "Hines Ltd",
+    "fecha": "2016-09-01",
+    "total": 373.98,
+    "moneda": "USD",
+    "categoria": "Entretenimiento"
+  },
+  {
+    "imagen": "batch1-0035.jpg",
+    "comercio": "Campos LLC",
+    "fecha": "2017-08-07",
+    "total": 722.11,
+    "moneda": "USD",
+    "categoria": "Ropa"
+  },
+  {
+    "imagen": "batch1-0036.jpg",
+    "comercio": "Campbell-Thomas",
+    "fecha": "2013-11-19",
+    "total": 8479.08,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0037.jpg",
+    "comercio": "Carter Inc",
+    "fecha": "2013-11-12",
+    "total": 151.38,
+    "moneda": "USD",
+    "categoria": "Educación"
+  },
+  {
+    "imagen": "batch1-0038.jpg",
+    "comercio": "Floyd-Figueroa",
+    "fecha": "2021-01-30",
+    "total": 2022.82,
+    "moneda": "USD",
+    "categoria": "Entretenimiento"
+  },
+  {
+    "imagen": "batch1-0039.jpg",
+    "comercio": "Cruz-Carter",
+    "fecha": "2011-06-08",
+    "total": 3004.96,
+    "moneda": "USD",
+    "categoria": "Tecnología"
+  },
+  {
+    "imagen": "batch1-0040.jpg",
+    "comercio": "West Group",
+    "fecha": "2015-09-27",
+    "total": 191.26,
+    "moneda": "USD",
+    "categoria": "Ropa"
+  },
+  {
+    "imagen": "batch1-0041.jpg",
+    "comercio": "Davis, Thomas and Larson",
+    "fecha": "2014-07-18",
+    "total": 194521.7,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0042.jpg",
+    "comercio": "Potter-Gordon",
+    "fecha": "2013-05-20",
+    "total": 15574.11,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0043.jpg",
+    "comercio": "Williamson-Hernandez",
+    "fecha": "2012-07-29",
+    "total": 2804.92,
+    "moneda": "USD",
+    "categoria": "Tecnología"
+  },
+  {
+    "imagen": "batch1-0044.jpg",
+    "comercio": "Wright, Gonzalez and Gomez",
+    "fecha": "2013-08-04",
+    "total": 81.68,
+    "moneda": "USD",
+    "categoria": "Ropa"
+  },
+  {
+    "imagen": "batch1-0045.jpg",
+    "comercio": "Burns, King and Serrano",
+    "fecha": "2018-01-16",
+    "total": 549.98,
+    "moneda": "USD",
+    "categoria": "Entretenimiento"
+  },
+  {
+    "imagen": "batch1-0046.jpg",
+    "comercio": "Wilson-Todd",
+    "fecha": "2021-03-15",
+    "total": 759.03,
+    "moneda": "USD",
+    "categoria": "Ropa"
+  },
+  {
+    "imagen": "batch1-0047.jpg",
+    "comercio": "Davis, Evans and Cooper",
+    "fecha": "2020-05-07",
+    "total": 4524.28,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0048.jpg",
+    "comercio": "Frazier-Rose",
+    "fecha": "2011-10-09",
+    "total": 529.78,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0049.jpg",
+    "comercio": "Martinez PLC",
+    "fecha": "2018-01-11",
+    "total": 342.87,
+    "moneda": "USD",
+    "categoria": "Educación"
+  },
+  {
+    "imagen": "batch1-0050.jpg",
+    "comercio": "Lee-Brown",
+    "fecha": "2012-07-24",
+    "total": 25738.94,
+    "moneda": "USD",
+    "categoria": "Hogar"
+  },
+  {
+    "imagen": "batch1-0051.jpg",
+    "comercio": "Harrison, Tucker and Choi",
+    "fecha": "2016-01-17",
+    "total": 2237.95,
+    "moneda": "USD",
+    "categoria": "Ropa"
+  },
+  {
+    "imagen": "batch1-0052.jpg",
+    "comercio": "Walton PLC",
+    "fecha": "2017-04-18",
+    "total": 243.71,
+    "moneda": "USD",
+    "categoria": "Ropa"
+  },
+  {
+    "imagen": "fact_photo_2026 (1).jpg",
+    "comercio": "",
+    "fecha": "",
+    "total": 8960.0,
+    "moneda": "CRC",
+    "categoria": "Alimentación"
+  },
+  {
+    "imagen": "fact_photo_2026 (2).jpg",
+    "comercio": "MXM San Isidro Heredia",
+    "fecha": "2026-11-06",
+    "total": 22670.0,
+    "moneda": "CRC",
+    "categoria": "Alimentación"
+  },
+  {
+    "imagen": "fact_photo_2026 (3).jpg",
+    "comercio": "Smoothies and Creps",
+    "fecha": "2026-11-05",
+    "total": 7600.0,
+    "moneda": "CRC",
+    "categoria": "Restaurantes"
+  },
+  {
+    "imagen": "fact_photo_2026 (4) r.jpg",
+    "comercio": "El Wok",
+    "fecha": "",
+    "total": 17680.0,
+    "moneda": "CRC",
+    "categoria": "Restaurantes"
+  },
+  {
+    "imagen": "fact_photo_2026 (5) r.jpg",
+    "comercio": "El Wok",
+    "fecha": "",
+    "total": 17680.0,
+    "moneda": "CRC",
+    "categoria": "Restaurantes"
+  },
+  {
+    "imagen": "fact_photo_2026 (6).jpg",
+    "comercio": "MXM San Isidro Heredia",
+    "fecha": "",
+    "total": 3419.0,
+    "moneda": "CRC",
+    "categoria": "Alimentación"
+  },
+  {
+    "imagen": "fact_photo_2026 (7).jpg",
+    "comercio": "Lincoln Plaza",
+    "fecha": "2026-10-06",
+    "total": 1300.0,
+    "moneda": "CRC",
+    "categoria": "Transporte"
+  },
+  {
+    "imagen": "fact_photo_2026 (8).jpg",
+    "comercio": "",
+    "fecha": "",
+    "total": 45089.0,
+    "moneda": "CRC",
+    "categoria": "Alimentación"
+  },
+  {
+    "imagen": "fact_photo_2026 (9).jpg",
+    "comercio": "MXM San Isidro Heredia",
+    "fecha": "",
+    "total": 60810.0,
+    "moneda": "CRC",
+    "categoria": "Alimentación"
+  },
+  {
+    "imagen": "fact_photo_2026 (10).jpg",
+    "comercio": "Bar Rest. Mirador",
+    "fecha": "2026-10-06",
+    "total": 29988.0,
+    "moneda": "CRC",
+    "categoria": "Restaurantes"
+  },
+  {
+    "imagen": "fact_photo_2026 (11) r.jpg",
+    "comercio": "",
+    "fecha": "2026-11-01",
+    "total": 43785.0,
+    "moneda": "CRC",
+    "categoria": "Mascotas"
+  },
+  {
+    "imagen": "fact_photo_2026 (12) r.jpg",
+    "comercio": "",
+    "fecha": "2026-11-01",
+    "total": 43785.0,
+    "moneda": "CRC",
+    "categoria": "Mascotas"
+  },
+  {
+    "imagen": "fact_photo_2026 (14).jpg",
+    "comercio": "",
+    "fecha": "",
+    "total": 300000.0,
+    "moneda": "",
+    "categoria": "N/A"
+  },
+  {
+    "imagen": "fact_photo_2026 (15).jpg",
+    "comercio": "",
+    "fecha": "",
+    "total": 29879.32,
+    "moneda": "CRC",
+    "categoria": "Salud"
+  }
+]

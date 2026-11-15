@@ -149,6 +149,13 @@ VALORES_ORIGINALES: dict[str, dict[str, Any]] = {
         "VECTORES": _VECTORES,
         "CAMPOS_ACUERDO": ("comercio", "fecha", "total", "moneda"),
         "COMERCIO_VACIO": "N/A",
+        "MONEDA_POR_DEFECTO": "CRC",
+        "RESULTADO_REGISTRAR": "registrar",
+        "RESULTADO_NO_REGISTRAR": "no_registrar",
+        "RESULTADOS_ESPERADOS": ("registrar", "no_registrar"),
+        "RESULTADO_NO_COMPROMETER": "no_comprometer",
+        "RESULTADOS_ADVERSARIALES": ("registrar", "no_registrar", "no_comprometer"),
+        "CATEGORIA_ADVERSARIAL": "Otros",
         "CAMPOS_ANOTACION": ("comercio", "fecha", "total", "moneda", "categoria"),
     },
     "baseline.constantes": {

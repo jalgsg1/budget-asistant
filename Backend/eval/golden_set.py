@@ -26,6 +26,11 @@ from eval.constantes import (  # noqa: F401
     MIN_VECTORES,
     MINIMO_POR_SUBTIPO_INTEGRIDAD,
     MINIMOS_DIFICULTAD,
+    RESULTADO_NO_COMPROMETER,
+    RESULTADO_NO_REGISTRAR,
+    RESULTADO_REGISTRAR,
+    RESULTADOS_ADVERSARIALES,
+    RESULTADOS_ESPERADOS,
     SUBTIPOS_INTEGRIDAD,
     TIPOS_CASO,
     TOTAL_DIFICILES,
@@ -51,9 +56,10 @@ class CasoLimpio:
     comercio: str
     fecha: str
     moneda: str
-    total: Decimal
+    total: Decimal | None   # None solo en facturas con resultado_esperado "no_registrar"
     categoria: str
     dificultad: str
+    resultado_esperado: str = RESULTADO_REGISTRAR
 
 
 @dataclass(frozen=True)
@@ -124,7 +130,11 @@ def _imagenes_en(directorio: Path) -> list[str]:
 
 # ------------------------------------------------------------ partición limpia
 
-def validar_ground_truth(entradas: Sequence[Mapping[str, Any]], imagenes: Collection[str]) -> list[ErrorValidacion]:
+def validar_ground_truth(
+    entradas: Sequence[Mapping[str, Any]],
+    imagenes: Collection[str],
+    resultados_permitidos: Collection[str] = RESULTADOS_ESPERADOS,
+) -> list[ErrorValidacion]:
     """Valida formato, unicidad y correspondencia 1:1 entre entradas e imágenes (Req. 12.3, 12.4, 12.9)."""
     errores: list[ErrorValidacion] = []
     vistos: dict[str, int] = {}
@@ -140,23 +150,30 @@ def validar_ground_truth(entradas: Sequence[Mapping[str, Any]], imagenes: Collec
             vistos[nombre] = vistos.get(nombre, 0) + 1
             if nombre not in imagenes:
                 errores.append(ErrorValidacion(nombre, "la entrada referencia una imagen inexistente"))
-        for campo in CAMPOS_GT[1:]:
+        resultado = e.get("resultado_esperado")
+        if resultado not in (None, "") and resultado not in resultados_permitidos:
+            errores.append(ErrorValidacion(
+                nombre, f"resultado_esperado inválido (valores aceptados: {', '.join(resultados_permitidos)})"))
+        # Una factura que el sistema debe rechazar solo necesita `dificultad`: sus datos no se usan.
+        rechazo = resultado == RESULTADO_NO_REGISTRAR
+        for campo in (("dificultad",) if rechazo else CAMPOS_GT[1:]):
             if campo not in e or e[campo] is None or e[campo] == "":
                 errores.append(ErrorValidacion(nombre, f"campo requerido ausente o vacío: {campo}"))
-        com = e.get("comercio")
-        if _no_vacio(com) and len(com) > 100:
-            errores.append(ErrorValidacion(nombre, "comercio excede 100 caracteres"))
-        if e.get("fecha") not in (None, "") and not _fecha_real(e.get("fecha")):
-            errores.append(ErrorValidacion(nombre, "fecha inválida (se espera YYYY-MM-DD real)"))
-        mon = e.get("moneda")
-        if mon not in (None, "") and not (isinstance(mon, str) and _RE_MONEDA.match(mon)):
-            errores.append(ErrorValidacion(nombre, "moneda inválida (3 letras mayúsculas)"))
-        for campo in CAMPOS_DECIMALES:
-            if e.get(campo) not in (None, "") and not _decimal_valido(e.get(campo)):
-                errores.append(ErrorValidacion(nombre, f"{campo} debe ser decimal no negativo con 2 decimales"))
-        cat = e.get("categoria")
-        if cat not in (None, "") and cat not in CLOSED_CATEGORY_LIST:
-            errores.append(ErrorValidacion(nombre, "categoria fuera del catálogo cerrado"))
+        if not rechazo:
+            com = e.get("comercio")
+            if _no_vacio(com) and len(com) > 100:
+                errores.append(ErrorValidacion(nombre, "comercio excede 100 caracteres"))
+            if e.get("fecha") not in (None, "") and not _fecha_real(e.get("fecha")):
+                errores.append(ErrorValidacion(nombre, "fecha inválida (se espera YYYY-MM-DD real)"))
+            mon = e.get("moneda")
+            if mon not in (None, "") and not (isinstance(mon, str) and _RE_MONEDA.match(mon)):
+                errores.append(ErrorValidacion(nombre, "moneda inválida (3 letras mayúsculas)"))
+            for campo in CAMPOS_DECIMALES:
+                if e.get(campo) not in (None, "") and not _decimal_valido(e.get(campo)):
+                    errores.append(ErrorValidacion(nombre, f"{campo} debe ser decimal no negativo con 2 decimales"))
+            cat = e.get("categoria")
+            if cat not in (None, "") and cat not in CLOSED_CATEGORY_LIST:
+                errores.append(ErrorValidacion(nombre, "categoria fuera del catálogo cerrado"))
         dif = e.get("dificultad")
         if dif not in (None, "") and dif not in DIFICULTADES:
             errores.append(ErrorValidacion(nombre, "dificultad inválida"))
@@ -236,92 +253,89 @@ def cargar_particion_limpia(directorio: Path) -> list[CasoLimpio]:
     casos = []
     for e in gt:
         nombre = Path(e["imagen"]).name
+        resultado = e.get("resultado_esperado") or RESULTADO_REGISTRAR
+        if resultado == RESULTADO_NO_REGISTRAR:
+            # Los datos no se usan: pueden faltar o ser inválidos.
+            total = None
+            if _decimal_valido(e.get("total")):
+                total = Decimal(str(e["total"]))
+            casos.append(CasoLimpio(
+                imagen=nombre, ruta=directorio / "images" / nombre,
+                comercio=str(e.get("comercio") or ""), fecha=str(e.get("fecha") or ""),
+                moneda=str(e.get("moneda") or ""), total=total,
+                categoria=str(e.get("categoria") or ""), dificultad=e["dificultad"],
+                resultado_esperado=resultado,
+            ))
+            continue
         casos.append(CasoLimpio(
             imagen=nombre, ruta=directorio / "images" / nombre,
             comercio=e["comercio"], fecha=e["fecha"], moneda=e["moneda"],
             total=Decimal(str(e["total"])),
             categoria=e["categoria"], dificultad=e["dificultad"],
+            resultado_esperado=resultado,
         ))
     return sorted(casos, key=lambda c: c.imagen)
 
 
 # ------------------------------------------------------- partición adversarial
+#
+# `adversarial_security/ground_truth.json` usa el mismo formato que el de la partición limpia
+# (imagen, comercio, fecha, moneda, total, categoria, dificultad, resultado_esperado) y agrega
+# campos propios del caso: `es_original` (original de un duplicado), `tipo`, `subtipo`,
+# `variante`, `original_id`, `vector` y `condicion_compromiso`. En un caso de inyección el
+# texto inyectado es el valor de `comercio`: se trata como dato, nunca como instrucción.
 
-def _archivo_valido(directorio: Path, archivo: Any) -> str | None:
-    """None si el archivo existe, no está vacío y queda dentro del directorio; si no, el motivo."""
-    if not _no_vacio(archivo):
-        return "campo 'archivo' ausente o vacío"
-    try:
-        base = directorio.resolve()
-        ruta = (directorio / archivo).resolve()
-        ruta.relative_to(base)
-    except (ValueError, OSError):
-        return "el archivo queda fuera de la partición adversarial"
-    if not ruta.is_file():
-        return f"el archivo no existe: {archivo}"
-    try:
-        if ruta.stat().st_size == 0:
-            return f"el archivo está vacío: {archivo}"
-    except OSError:
-        return f"el archivo no es legible: {archivo}"
-    return None
+def _id_de(imagen: str) -> str:
+    return Path(imagen).stem
 
 
-def validar_manifiesto(manifiesto: Mapping[str, Any], directorio: Path) -> list[ErrorValidacion]:
-    """Valida el manifiesto adversarial (Req. 13.1-13.8, 14.1-14.4, 14.6, 14.8). Solo lectura."""
+def validar_entradas_adversariales(
+    entradas: Sequence[Mapping[str, Any]], directorio: Path
+) -> list[ErrorValidacion]:
+    """Valida las entradas adversariales contra las imágenes de ``directorio/images``.
+
+    Solo lectura (Req. 13.1-13.8, 14.1-14.4, 14.6, 14.8). Reporta todos los ofensivos."""
     directorio = Path(directorio)
-    errores: list[ErrorValidacion] = []
-    if not isinstance(manifiesto, Mapping) or not isinstance(manifiesto.get("casos"), list):
-        return [ErrorValidacion("adversarial_manifest.json", "se esperaba un objeto con la lista 'casos'")]
+    imagenes = _imagenes_en(directorio / "images")
+    errores = list(validar_ground_truth(entradas, set(imagenes), RESULTADOS_ADVERSARIALES))
 
-    originales = manifiesto.get("originales") or []
-    ids_orig: set[str] = set()
-    if not isinstance(originales, list):
-        errores.append(ErrorValidacion("originales", "se esperaba una lista"))
-        originales = []
-    for idx, o in enumerate(originales):
-        oid = o.get("id") if isinstance(o, Mapping) else None
-        nombre = oid if _no_vacio(oid) else f"originales[{idx}]"
-        if not isinstance(o, Mapping) or not _no_vacio(oid):
-            errores.append(ErrorValidacion(nombre, "original sin 'id'"))
-            continue
-        if oid in ids_orig:
-            errores.append(ErrorValidacion(nombre, "id de original repetido"))
-        ids_orig.add(oid)
-        motivo = _archivo_valido(directorio, o.get("archivo"))
-        if motivo:
-            errores.append(ErrorValidacion(nombre, motivo))
-
-    ids_vistos: set[str] = set()
+    ids_originales = {
+        _id_de(e["imagen"]) for e in entradas
+        if isinstance(e, Mapping) and e.get("es_original") is True and _no_vacio(e.get("imagen"))
+    }
     por_subtipo: dict[str, int] = {}
     variantes: set[str] = set()
     imagenes_por_vector: dict[str, int] = {}
     condiciones: set[str] = set()
 
-    for idx, c in enumerate(manifiesto["casos"]):
-        if not isinstance(c, Mapping):
-            errores.append(ErrorValidacion(f"casos[{idx}]", "el caso no es un objeto"))
-            continue
-        cid = c.get("id")
-        nombre = cid if _no_vacio(cid) else f"casos[{idx}]"
-        for campo in ("id", "archivo", "tipo", "subtipo", "resultado_esperado"):
-            if not _no_vacio(c.get(campo)):
-                errores.append(ErrorValidacion(nombre, f"campo requerido ausente o vacío: {campo}"))
-        if _no_vacio(cid):
-            if cid in ids_vistos:
-                errores.append(ErrorValidacion(nombre, "id repetido en el manifiesto"))
-            ids_vistos.add(cid)
-        if _no_vacio(c.get("archivo")):
-            motivo = _archivo_valido(directorio, c.get("archivo"))
-            if motivo:
-                errores.append(ErrorValidacion(nombre, motivo))
+    for idx, e in enumerate(entradas):
+        if not isinstance(e, Mapping):
+            continue  # ya lo reportó validar_ground_truth
+        img = e.get("imagen")
+        nombre = Path(img).name if _no_vacio(img) else f"entrada[{idx}]"
+        if _no_vacio(img) and nombre in imagenes:
+            try:
+                if (directorio / "images" / nombre).stat().st_size == 0:
+                    errores.append(ErrorValidacion(nombre, f"el archivo está vacío: {nombre}"))
+            except OSError:
+                errores.append(ErrorValidacion(nombre, f"el archivo no es legible: {nombre}"))
 
-        tipo, subtipo = c.get("tipo"), c.get("subtipo")
+        resultado = e.get("resultado_esperado")
+        if e.get("es_original") is True:
+            if resultado not in (None, "", RESULTADO_REGISTRAR):
+                errores.append(ErrorValidacion(nombre, "un original debe tener resultado_esperado 'registrar'"))
+            continue
+
+        for campo in ("tipo", "subtipo", "resultado_esperado"):
+            if not _no_vacio(e.get(campo)):
+                errores.append(ErrorValidacion(nombre, f"campo requerido ausente o vacío: {campo}"))
+
+        tipo, subtipo = e.get("tipo"), e.get("subtipo")
         if _no_vacio(tipo) and tipo not in TIPOS_CASO:
             errores.append(ErrorValidacion(nombre, f"tipo inválido: {tipo}"))
 
         if tipo == "integridad":
-            if c.get("resultado_esperado") not in (None, "") and c.get("resultado_esperado") != "no_registrar":
+            if resultado not in (None, "") and resultado != RESULTADO_NO_REGISTRAR:
                 errores.append(ErrorValidacion(nombre, "resultado_esperado debe ser 'no_registrar'"))
             if _no_vacio(subtipo):
                 if subtipo not in SUBTIPOS_INTEGRIDAD:
@@ -329,35 +343,31 @@ def validar_manifiesto(manifiesto: Mapping[str, Any], directorio: Path) -> list[
                 else:
                     por_subtipo[subtipo] = por_subtipo.get(subtipo, 0) + 1
             if subtipo == "fecha_invalida":
-                var = c.get("variante")
+                var = e.get("variante")
                 if var in VARIANTES_FECHA:
                     variantes.add(var)
                 elif var is not None:
                     errores.append(ErrorValidacion(nombre, f"variante de fecha inválida: {var}"))
             if subtipo == "factura_duplicada":
-                oid = c.get("original_id")
+                oid = e.get("original_id")
                 if not _no_vacio(oid):
                     errores.append(ErrorValidacion(nombre, "duplicado sin 'original_id'"))
-                elif oid not in ids_orig:
-                    errores.append(ErrorValidacion(nombre, f"el original '{oid}' no existe en 'originales'"))
+                elif oid not in ids_originales:
+                    errores.append(ErrorValidacion(nombre, f"el original '{oid}' no existe entre los originales"))
         elif tipo == "inyeccion":
-            if c.get("resultado_esperado") not in (None, "") and c.get("resultado_esperado") != "no_comprometer":
+            if resultado not in (None, "") and resultado != RESULTADO_NO_COMPROMETER:
                 errores.append(ErrorValidacion(nombre, "resultado_esperado debe ser 'no_comprometer'"))
-            vector = c.get("vector")
+            vector = e.get("vector")
             if not _no_vacio(vector):
                 errores.append(ErrorValidacion(nombre, "inyección sin 'vector'"))
             else:
                 imagenes_por_vector[vector] = imagenes_por_vector.get(vector, 0) + 1
-            if not _no_vacio(c.get("texto_inyectado")):
-                errores.append(ErrorValidacion(nombre, "inyección sin 'texto_inyectado'"))
-            cond = c.get("condicion_compromiso")
+            cond = e.get("condicion_compromiso")
             if cond not in CONDICIONES_COMPROMISO:
                 errores.append(ErrorValidacion(
                     nombre, f"condicion_compromiso debe ser una de {', '.join(CONDICIONES_COMPROMISO)}"))
             else:
                 condiciones.add(cond)
-            if not isinstance(c.get("datos_esperados"), Mapping) or not c.get("datos_esperados"):
-                errores.append(ErrorValidacion(nombre, "inyección sin 'datos_esperados'"))
 
     # Mínimos globales (integridad)
     for sub in SUBTIPOS_INTEGRIDAD:
@@ -381,21 +391,41 @@ def validar_manifiesto(manifiesto: Mapping[str, Any], directorio: Path) -> list[
     return errores
 
 
-def cargar_particion_adversarial(directorio: Path) -> tuple[list[CasoAdversarial], list[Original]]:
-    """Carga casos y originales del manifiesto. Asume validación previa."""
+def validar_particion_adversarial(directorio: Path) -> list[ErrorValidacion]:
+    """Valida la partición adversarial completa (``ground_truth.json`` e imágenes). Solo lectura."""
     directorio = Path(directorio)
-    man, err = _leer_json(directorio / "adversarial_manifest.json")
-    if err or not isinstance(man, Mapping):
-        raise ValueError(f"adversarial_manifest.json inválido: {err or 'no es un objeto'}")
-    casos = [
-        CasoAdversarial(
-            id=c["id"], archivo=c["archivo"], ruta=directorio / c["archivo"], tipo=c["tipo"],
-            subtipo=c["subtipo"], resultado_esperado=c["resultado_esperado"],
-            original_id=c.get("original_id"), variante=c.get("variante"), vector=c.get("vector"),
-            texto_inyectado=c.get("texto_inyectado"), condicion_compromiso=c.get("condicion_compromiso"),
-            datos_esperados=dict(c.get("datos_esperados") or {}),
-        )
-        for c in man.get("casos", [])
-    ]
-    originales = [Original(id=o["id"], ruta=directorio / o["archivo"]) for o in man.get("originales") or []]
+    gt, err = _leer_json(directorio / "ground_truth.json")
+    if err:
+        return [ErrorValidacion("ground_truth.json", err)]
+    if not isinstance(gt, list):
+        return [ErrorValidacion("ground_truth.json", "se esperaba una lista de objetos")]
+    return validar_entradas_adversariales(gt, directorio)
+
+
+def cargar_particion_adversarial(directorio: Path) -> tuple[list[CasoAdversarial], list[Original]]:
+    """Carga casos y originales de ``ground_truth.json``. Asume validación previa."""
+    directorio = Path(directorio)
+    gt, err = _leer_json(directorio / "ground_truth.json")
+    if err or not isinstance(gt, list):
+        raise ValueError(f"ground_truth.json inválido: {err or 'no es una lista'}")
+    casos: list[CasoAdversarial] = []
+    originales: list[Original] = []
+    for e in gt:
+        nombre = Path(e["imagen"]).name
+        ruta = directorio / "images" / nombre
+        if e.get("es_original") is True:
+            originales.append(Original(id=_id_de(nombre), ruta=ruta))
+            continue
+        inyeccion = e["tipo"] == "inyeccion"
+        casos.append(CasoAdversarial(
+            id=_id_de(nombre), archivo=nombre, ruta=ruta, tipo=e["tipo"], subtipo=e["subtipo"],
+            resultado_esperado=e["resultado_esperado"],
+            original_id=e.get("original_id"), variante=e.get("variante"), vector=e.get("vector"),
+            texto_inyectado=e["comercio"] if inyeccion else None,
+            condicion_compromiso=e.get("condicion_compromiso"),
+            datos_esperados={
+                "comercio": e["comercio"], "fecha": e["fecha"], "moneda": e["moneda"],
+                "total": float(Decimal(str(e["total"]))),
+            } if inyeccion else {},
+        ))
     return sorted(casos, key=lambda c: c.archivo), originales
