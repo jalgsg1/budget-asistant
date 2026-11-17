@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import threading
+import unicodedata
 import uuid
 from pathlib import Path
 from typing import Any, Callable, Iterable
@@ -17,6 +18,7 @@ from typing import Any, Callable, Iterable
 from api_pruebas.config import Config
 from api_pruebas.errores import ErrorApi, error_api, redactar
 from api_pruebas.esquemas import OcrRespuesta
+from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
 from finanzas_mcp.business.duplicados import buscar_duplicados as _buscar_duplicados
 from finanzas_mcp.business.factura import ResultadoFactura, evaluar_factura
 from finanzas_mcp.business.transacciones import (
@@ -60,6 +62,23 @@ def obtener_extractor_ocr(config: Config) -> ExtractorOcr:
             extractor = cliente.extract
             _extractor_cache[clave] = extractor
         return extractor
+
+
+def _sin_acentos(texto: str) -> str:
+    descompuesto = unicodedata.normalize("NFKD", texto)
+    return "".join(c for c in descompuesto if not unicodedata.combining(c)).casefold().strip()
+
+
+def _categoria_canonica(categoria: Any) -> Any:
+    """Devuelve la categoría de la lista cerrada que coincide sin distinguir
+    mayúsculas ni acentos ("alimentacion" -> "Alimentación"); si no hay, la deja igual."""
+    if not isinstance(categoria, str):
+        return categoria
+    clave = _sin_acentos(categoria)
+    for oficial in CLOSED_CATEGORY_LIST:
+        if _sin_acentos(oficial) == clave:
+            return oficial
+    return categoria
 
 
 def _item_a_dict(item: Any) -> dict:
@@ -192,6 +211,43 @@ class ServiciosNegocio:
                     )
                 )
         return len(datos_lista)
+
+    def _transaccion_validada(self, datos: dict) -> Transaction:
+        datos = {**datos, "categoria": _categoria_canonica(datos.get("categoria"))}
+        res = evaluar_factura(datos)
+        if not res.valid:
+            raise ErrorApi(
+                422,
+                res.first_error_code or "VALIDATION_ERROR",
+                redactar("; ".join(res.errors)),
+            )
+        subtotal, iva = datos.get("subtotal"), datos.get("iva")
+        return Transaction(
+            user_id=self.config.user_id,
+            comercio=datos["comercio"],
+            fecha=datos["fecha"],
+            total=float(datos["total"]),
+            moneda=str(datos["moneda"]).strip().upper(),
+            categoria=str(datos["categoria"]).strip(),
+            subtotal=float(subtotal) if subtotal is not None else None,
+            iva=float(iva) if iva is not None else None,
+            descripcion=datos.get("descripcion"),
+        )
+
+    def crear(self, datos: dict) -> Transaction:
+        """Valida (R1-R6) e inserta una transacción del usuario configurado."""
+        tx = self._transaccion_validada(datos)
+        with self._repo() as repo:
+            tx.id = repo.insert(tx)
+            return repo.get(tx.id, self.config.user_id)
+
+    def actualizar(self, tx_id: int, datos: dict) -> Transaction:
+        """Reemplaza los campos de una transacción existente (404 si no existe)."""
+        tx = self._transaccion_validada(datos)
+        with self._repo() as repo:
+            if not repo.update(tx_id, tx):
+                raise error_api("TRANSACTION_NOT_FOUND", "Transacción no encontrada.")
+            return repo.get(tx_id, self.config.user_id)
 
     # ------------------------------------------------------------------
     # Internos: solo para el adaptador de herramientas del Pipeline (sin endpoint)

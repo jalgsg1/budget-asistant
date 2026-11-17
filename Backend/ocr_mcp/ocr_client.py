@@ -24,6 +24,7 @@ from typing import Any
 
 from langchain_core.messages import HumanMessage
 
+from finanzas_mcp.constantes import CATEGORIAS_CERRADAS
 from finanzas_mcp.models import OcrResult
 from ocr_mcp.ocr_core import calcular_confianzas
 
@@ -43,7 +44,9 @@ _SYSTEM_PROMPT = (
     "  moneda     - string: currency code (CRC or USD only)\n"
     "  subtotal   - number or null: pre-tax subtotal\n"
     "  iva        - number or null: tax amount\n"
-    "  categoria  - string or null: expense category\n"
+    "  categoria  - string or null: expense category; use EXACTLY one of: "
+    + ", ".join(CATEGORIAS_CERRADAS)
+    + " (null if none fits)\n"
     "  descripcion - string or null: brief description of the purchase\n"
     "In addition, include a 'confidence' object whose keys are those same "
     "field names and whose values are floats from 0.0 to 1.0 representing "

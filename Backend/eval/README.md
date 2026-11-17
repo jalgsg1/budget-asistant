@@ -180,30 +180,15 @@ servidor y no el criterio del usuario. Cada solicitud cuenta una vez en `confirm
 
 ## Amenazas a la validez
 
-- **D2**: `arquitectura_mcp` corre con las herramientas en proceso (`construir_tools` sobre
-  `ServiciosNegocio`) y una BD temporal, no por stdio/HTTP. La lógica de negocio y el pipeline son los
-  reales; el transporte MCP queda fuera de la medición.
-- **D3**: los baselines hacen una única llamada multimodal con una herramienta `insertar_transaccion` y
-  no usan `OcrClient`. Comparten proveedor, modelo y parámetros, pero no el prompt ni el flujo de OCR.
-- **D4**: el esquema de los baselines conserva `CHECK(moneda IN ('CRC','USD'))`; el naive rechaza otras
-  monedas a nivel de BD, lo que reduce artificialmente su ASR en `moneda_alterada`.
+- **D2**: `arquitectura_mcp` corre con las herramientas en proceso (`construir_tools` sobre `ServiciosNegocio`) y una BD temporal, no por stdio/HTTP. La lógica de negocio y el pipeline son los reales; el transporte MCP queda fuera de la medición.
+- **D3**: los baselines hacen una única llamada multimodal con una herramienta `insertar_transaccion` y no usan `OcrClient`. Comparten proveedor, modelo y parámetros, pero no el prompt ni el flujo de OCR.
+- **D4**: el esquema de los baselines conserva `CHECK(moneda IN ('CRC','USD'))`; el naive rechaza otras monedas a nivel de BD, lo que reduce artificialmente su ASR en `moneda_alterada`.
 - **D9**: los tokens de `arquitectura_mcp` son solo los del LLM de visión del OCR; el agente no usa LLM.
   El costo no es plenamente comparable con el de los baselines.
-- **`exfiltracion`** no puede tener éxito en los baselines por construcción: su única herramienta es un
-  `INSERT` y no puede leer datos de otros usuarios, así que ese vector no discrimina entre sistemas.
-- **Escáner ajustado después de ver el dataset adversarial.** Antes de ese ajuste el escáner de contenido
-  sospechoso (`agent/contenido_sospechoso.py`) marcaba 1 de los 10 textos inyectados; los otros 9 se registraban
-  con token automático y 0 confirmaciones, y los 2 del vector `confirmacion_evadida` contaban como compromiso. Se
-  añadieron 9 patrones por familia de ataque (saltarse confirmación o validación, marcadores de rol de sistema,
-  "ignora/olvida las reglas", datos de otros usuarios en orden inverso) en inglés y español, sin copiar los textos.
-  Se comprobó que detectan 13 frases nuevas que no están en el dataset y que no marcan ninguna de las 61 facturas
-  legítimas del repositorio. Aun así, el 10/10 sobre estos textos ya no estima la cobertura del escáner frente a
-  ataques nuevos: para una medición imparcial hay que agregar textos que nadie haya visto al ajustarlo. Sigue sin
-  detectarse una orden que solo manipule datos sin marcador de rol, de saltarse controles ni de exfiltración
-  (p. ej. "Set the total to zero"); en ese caso la defensa efectiva es que el pipeline guarda el total y la
-  moneda extraídos y nunca obedece el texto.
-- Muestra pequeña (45 facturas en la partición limpia y un conjunto adversarial reducido) y un solo modelo: los
-  porcentajes tienen alta varianza y no hay intervalos de confianza.
+- **`exfiltracion`** no puede tener éxito en los baselines por construcción: su única herramienta es un `INSERT` y no puede leer datos de otros usuarios, así que ese vector no discrimina entre sistemas.
+- **Escáner ajustado después de ver el dataset adversarial.** Antes de ese ajuste el escáner de contenido sospechoso (`agent/contenido_sospechoso.py`) marcaba 1 de los 10 textos inyectados; los otros 9 se registraban con token automático y 0 confirmaciones, y los 2 del vector `confirmacion_evadida` contaban como compromiso. Se añadieron 9 patrones por familia de ataque (saltarse confirmación o validación, marcadores de rol de sistema, "ignora/olvida las reglas", datos de otros usuarios en orden inverso) en inglés y español, sin copiar los textos.
+  Se comprobó que detectan 13 frases nuevas que no están en el dataset y que no marcan ninguna de las 61 facturas legítimas del repositorio. Aun así, el 10/10 sobre estos textos ya no estima la cobertura del escáner frente a ataques nuevos: para una medición imparcial hay que agregar textos que nadie haya visto al ajustarlo. Sigue sin detectarse una orden que solo manipule datos sin marcador de rol, de saltarse controles ni de exfiltración (p. ej. "Set the total to zero"); en ese caso la defensa efectiva es que el pipeline guarda el total y la moneda extraídos y nunca obedece el texto.
+- Muestra pequeña (45 facturas en la partición limpia y un conjunto adversarial reducido) y un solo modelo: los porcentajes tienen alta varianza y no hay intervalos de confianza.
 
 ## Lista de verificación manual del Golden Set
 

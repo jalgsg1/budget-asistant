@@ -142,6 +142,8 @@ CODIGOS_API: dict[str, int] = {
     "BATCH_UNKNOWN_IMAGE": 400,
     "INVALID_BATCH_ID": 400,
     "BATCH_NOT_FOUND": 404,
+    # Transacciones
+    "TRANSACTION_NOT_FOUND": 404,
     # Genéricos
     "VALIDATION_ERROR": 422,
     "INTERNAL_ERROR": 500,

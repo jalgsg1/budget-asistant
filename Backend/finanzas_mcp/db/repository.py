@@ -229,6 +229,39 @@ class TransactionRepository:
         rows = self._conn.execute(sql, params).fetchall()
         return [_row_to_transaction(row) for row in rows]
 
+    def get(self, tx_id: int, user_id: str) -> Transaction | None:
+        """Return the transaction *tx_id* of *user_id*, or ``None`` if it does not exist."""
+        row = self._conn.execute(
+            """
+            SELECT id, user_id, comercio, fecha, total, moneda, categoria,
+                   subtotal, iva, descripcion, created_at
+            FROM   transactions
+            WHERE  id = ? AND user_id = ?
+            """,
+            (tx_id, user_id),
+        ).fetchone()
+        return _row_to_transaction(row) if row else None
+
+    def update(self, tx_id: int, tx: Transaction) -> bool:
+        """Overwrite the editable columns of row *tx_id* owned by ``tx.user_id``.
+
+        Returns ``True`` if a row was updated.  ``user_id`` and ``created_at`` never change.
+        """
+        cursor = self._conn.execute(
+            """
+            UPDATE transactions
+            SET    comercio = ?, fecha = ?, total = ?, moneda = ?, categoria = ?,
+                   subtotal = ?, iva = ?, descripcion = ?
+            WHERE  id = ? AND user_id = ?
+            """,
+            (
+                tx.comercio, tx.fecha, tx.total, tx.moneda, tx.categoria,
+                tx.subtotal, tx.iva, tx.descripcion, tx_id, tx.user_id,
+            ),
+        )
+        self._conn.commit()
+        return cursor.rowcount > 0
+
     def eliminar_por_usuario(self, user_id: str) -> int:
         """Delete every transaction belonging to *user_id* and return the row count."""
         cursor = self._conn.execute(
