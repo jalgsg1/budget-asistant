@@ -59,6 +59,11 @@ class TraceEntry:
     output_summary: str
     tool_called: Optional[str]
     timestamp: str
+    # Campos añadidos para auditoría; con valor por defecto para no romper a los llamadores.
+    seq: int = 0                          # orden único dentro de la traza (``step`` puede repetirse)
+    etapa: str = ""                       # extraer | validar | duplicados | confirmar | registrar | fin
+    duracion_ms: Optional[int] = None     # tiempo de la llamada a la herramienta o de la espera al usuario
+    datos: Optional[dict] = None          # detalle estructurado (sin texto OCR completo)
 
 
 @dataclass
@@ -113,6 +118,10 @@ class Trace:
     ocr: Optional[dict] = None
     tokens_entrada: int = 0
     tokens_salida: int = 0
+    # Evidencia de seguridad: permite afirmar con datos si una inyección tuvo efecto.
+    seguridad: Optional[dict] = None
+    # Recorrido de la factura: lo leído por OCR, lo corregido por el usuario y lo registrado.
+    factura: Optional[dict] = None
 
 
 # ---------------------------------------------------------------------------

@@ -27,6 +27,7 @@ modificar el flujo.  El texto OCR completo no se guarda en la traza.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -53,7 +54,7 @@ from agent.constantes import (
     RAZON_RECHAZO_USUARIO,
     REQUIRED_FIELDS as _REQUIRED_FIELDS,
 )
-from agent.contenido_sospechoso import ResultadoEscaneo, escanear
+from agent.contenido_sospechoso import ResultadoEscaneo, escanear, evidencia
 from agent.hitl import (
     PROMPT_ALERTAS,
     PROMPT_MONTO_ALTO,
@@ -278,6 +279,16 @@ class InvoicePipeline:
         self._datos_extraidos: dict = {}
         self._n_duplicados = 0
         self._token_auto = False
+        self._reset_auditoria()
+
+    def _reset_auditoria(self) -> None:
+        self._etapa = "extraer"
+        self._seq = 0
+        self._bloqueadas: list[dict] = []
+        self._descartados: list[str] = []
+        self._correcciones: list[dict] = []
+        self._texto_info: dict = {}
+        self._registro: Optional[dict] = None
 
     # -- API -----------------------------------------------------------------
 
@@ -292,12 +303,17 @@ class InvoicePipeline:
         self._datos_extraidos = {}
         self._n_duplicados = 0
         self._token_auto = False
+        self._reset_auditoria()
         status, reason, message, tx_id, datos = ESTADO_ERROR_VALIDACION, RAZON_FALLO_VALIDACION, "", None, {}
         try:
             datos = self._step1_extraer(image_path)
+            self._etapa = "validar"
             self._step2_3_validar(datos)
+            self._etapa = "duplicados"
             self._step4_duplicados(datos)
+            self._etapa = "confirmar"
             token, high_token = self._step5_confirmar(datos)
+            self._etapa = "registrar"
             tx_id = self._step6_registrar(datos, token, high_token)
             status, reason = ESTADO_EXITO, RAZON_EXITO
             message = f"Transacción registrada con id={tx_id}."
@@ -313,7 +329,9 @@ class InvoicePipeline:
 
         if status != ESTADO_EXITO:
             message = f"{message} La transacción NO fue guardada."
+        self._etapa = "fin"
         self._log("termination", "", message, None)
+        self._construir_auditoria(datos, status)
         self._trace.final_status = status
         self._trace.termination_reason = reason
         self._trace.transaction_id = tx_id
@@ -324,36 +342,48 @@ class InvoicePipeline:
 
     # -- Infraestructura -----------------------------------------------------
 
-    def _log(self, action: str, inp: str, out: str, tool: Optional[str]) -> None:
+    def _log(self, action: str, inp: str, out: str, tool: Optional[str],
+             duracion_ms: Optional[int] = None, datos: Optional[dict] = None) -> None:
+        self._seq += 1
         self._trace.entries.append(TraceEntry(
             step=self._steps.count, action=action, input_summary=inp[:300],
             output_summary=out[:300], tool_called=tool, timestamp=_now(),
+            seq=self._seq, etapa=self._etapa, duracion_ms=duracion_ms, datos=datos,
         ))
 
     def _call(self, name: str, args: dict, confirmed: bool = False) -> Any:
         """Llama una herramienta aplicando política, límites y traza."""
         if name not in self._policy.allowed_tools or name not in self._tools:
+            self._bloquear(name, "no_permitida")
             raise PolicyError(f"herramienta '{name}' no permitida")
         if name in self._policy.confirmation_tools and not confirmed:
+            self._bloquear(name, "sin_confirmacion")
             raise PolicyError(f"herramienta '{name}' requiere confirmación explícita")
         self._steps.increment()
+        t0 = time.perf_counter()
         try:
             result = normalize_tool_result(self._tools[name](args))
         except ToolError as err:
-            self._log(name, _summ(args), f"error {err.code}", name)
+            self._log(name, _summ(args), f"error {err.code}", name, _ms(t0), {"error": err.code})
             self._tokens.add(self._estimate(args, err.code))
             raise
-        self._log(name, _summ(args), "ok", name)
+        self._log(name, _summ(args), "ok", name, _ms(t0))
         self._tokens.add(self._estimate(args, result))
         return result
+
+    def _bloquear(self, name: str, motivo: str) -> None:
+        """Registra un intento de usar una herramienta fuera de política (indicio de manipulación)."""
+        self._bloqueadas.append({"herramienta": name, "motivo": motivo, "etapa": self._etapa})
+        self._log("policy_blocked", f"herramienta={name}", motivo, None)
 
     def _ask(self, prompt: str, action: str) -> Optional[str]:
         """Pide dato al usuario; cuenta como paso de decisión."""
         self._steps.increment()
+        t0 = time.perf_counter()
         answer = self._io.ask(prompt)
         answer = answer.strip() if isinstance(answer, str) else None
         answer = answer or None
-        self._log(action, prompt, "respuesta" if answer else "sin respuesta", None)
+        self._log(action, prompt, "respuesta" if answer else "sin respuesta", None, _ms(t0))
         self._tokens.add(self._estimate(prompt, answer))
         return answer
 
@@ -443,15 +473,82 @@ class InvoicePipeline:
         value = _coerce(f, ans)
         if value is None:
             raise _Stop(RAZON_FALLO_VALIDACION, f"Valor inválido para '{f}'.")
-        datos[f] = value
+        self._corregir(datos, f, value)
+
+    def _corregir(self, datos: dict, f: str, nuevo: Any) -> None:
+        """Asigna un valor dado por el usuario y deja constancia de lo que había leído el OCR."""
+        previo = datos.get(f)
+        if previo != nuevo:
+            self._correcciones.append({
+                "campo": f, "valor_ocr": previo, "valor_usuario": nuevo, "etapa": self._etapa,
+            })
+        datos[f] = nuevo
 
     def _escanear(self, text: str) -> None:
         self._escaneo = escanear(text)
         self._trace.patrones_sospechosos = list(self._escaneo.ids)
         self._trace.motivo_fallo_escaneo = self._escaneo.motivo_fallo
+        self._texto_info = {
+            "longitud": len(text) if isinstance(text, str) else 0,
+            "sha256": hashlib.sha256(text.encode("utf-8", "replace")).hexdigest()
+            if isinstance(text, str) else None,
+        }
+        self._descartados = _campos_descartados(text)
+        evid = evidencia(text, self._escaneo.ids)
         if self._escaneo.sospechoso:
             self._log("suspicious_data_detected", "contenido OCR",
-                      "tratado como dato; no ejecutado", None)
+                      "tratado como dato; no ejecutado", None,
+                      datos={"patrones": list(self._escaneo.ids), "evidencia": evid,
+                             "campos_descartados": self._descartados})
+
+    def _construir_auditoria(self, datos: dict, status: str) -> None:
+        """Resume en la traza qué pasó con la factura y si hay indicios de que una inyección surtió efecto."""
+        llamadas = [e.tool_called for e in self._trace.entries if e.tool_called]
+        conteo = {n: llamadas.count(n) for n in dict.fromkeys(llamadas)}
+        indicios: list[str] = []
+        for n in conteo:
+            if n not in _HERRAMIENTAS_PIPELINE:
+                indicios.append(f"herramienta fuera del pipeline: {n}")
+        for n, maximo in _MAX_LLAMADAS.items():
+            if conteo.get(n, 0) > maximo:
+                indicios.append(f"{n} llamada {conteo[n]} veces (máximo {maximo})")
+        for b in self._bloqueadas:
+            indicios.append(f"intento bloqueado por política: {b['herramienta']} ({b['motivo']})")
+        if self._registro is not None:
+            extra = sorted(set(self._registro) - _CAMPOS_REGISTRO)
+            if extra:
+                indicios.append(f"el registro incluyó campos no permitidos: {extra}")
+        sospechoso = bool(self._escaneo.sospechoso)
+        if indicios:
+            veredicto = "indicios_de_ejecucion"
+        elif sospechoso:
+            veredicto = "detectada_sin_efecto"
+        else:
+            veredicto = "sin_indicios"
+        self._trace.seguridad = {
+            "veredicto_inyeccion": veredicto,
+            "indicios_de_ejecucion": indicios,
+            "contenido_sospechoso": sospechoso,
+            "patrones": list(self._escaneo.ids),
+            "evidencia": evidencia(
+                (self._ocr_sel or {}).get("text", ""), self._escaneo.ids,
+            ),
+            "campos_ocr_descartados": list(self._descartados),
+            "texto_ocr": dict(self._texto_info),
+            "herramientas_invocadas": conteo,
+            "herramientas_bloqueadas": list(self._bloqueadas),
+            "hitl_solicitado": bool((self._trace.decision_hitl or {}).get("hitl_solicitado")),
+            "token_automatico": self._token_auto,
+        }
+        self._trace.factura = {
+            "datos_ocr": dict(self._datos_extraidos),
+            "correcciones_usuario": list(self._correcciones),
+            "datos_finales": _payload(datos) if datos else {},
+            "registro_enviado": self._registro,
+            "n_duplicados": self._n_duplicados,
+            "resultado": status,
+            "transaction_id": self._trace.transaction_id,
+        }
 
     # -- Pasos 2 y 3: Validar / Aritmética -----------------------------------
 
@@ -491,7 +588,7 @@ class InvoicePipeline:
         value = _coerce(f, ans) if ans else None
         if value is None:
             raise _Stop(RAZON_FALLO_VALIDACION, f"No se obtuvo un valor válido para '{f}'.")
-        datos[f] = value
+        self._corregir(datos, f, value)
 
     def _select_category(self, datos: dict) -> None:
         options = "\n".join(f"  {i}. {c}" for i, c in enumerate(CLOSED_CATEGORY_LIST, 1))
@@ -504,7 +601,7 @@ class InvoicePipeline:
                 chosen = next((c for c in CLOSED_CATEGORY_LIST if c.lower() == ans.lower()), None)
         if chosen is None:
             raise _Stop(RAZON_FALLO_VALIDACION, "No se seleccionó una categoría válida.")
-        datos["categoria"] = chosen
+        self._corregir(datos, "categoria", chosen)
 
     def _fix_arithmetic(self, datos: dict) -> None:
         ans = self._ask(
@@ -629,6 +726,8 @@ class InvoicePipeline:
         if self._ocr_sel is not None:
             args["confianza_ocr"] = self._ocr_sel["confianza"]
         args["contenido_sospechoso"] = bool(self._escaneo.sospechoso)
+        # Sin tokens de confirmación: solo qué se envió al servidor.
+        self._registro = {k: v for k, v in args.items() if "token" not in k}
         try:
             res = self._call("registrar_transaccion", args, confirmed=True)
         except ToolError as err:
@@ -639,6 +738,27 @@ class InvoicePipeline:
 # ---------------------------------------------------------------------------
 # Utilidades puras
 # ---------------------------------------------------------------------------
+
+
+_HERRAMIENTAS_PIPELINE = frozenset(
+    {"ocr_imagen", "validar_factura", "buscar_duplicados", "registrar_transaccion"})
+_MAX_LLAMADAS = {"ocr_imagen": 2, "buscar_duplicados": 1, "registrar_transaccion": 1}
+_CAMPOS_REGISTRO = frozenset(ALLOWED_FIELDS) | {"confianza_ocr", "contenido_sospechoso"}
+
+
+def _ms(t0: float) -> int:
+    return int((time.perf_counter() - t0) * 1000)
+
+
+def _campos_descartados(text: str) -> list[str]:
+    """Claves del JSON del OCR que no están en la lista blanca (ignoradas por el agente)."""
+    try:
+        data = json.loads(text)
+    except (TypeError, ValueError):
+        return []
+    if not isinstance(data, dict):
+        return []
+    return sorted(str(k)[:40] for k in data if k not in ALLOWED_FIELDS)[:20]
 
 
 def _es_numero(v: Any) -> bool:

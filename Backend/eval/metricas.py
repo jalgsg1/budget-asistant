@@ -229,6 +229,15 @@ def rechazo_esperado(registros: Iterable[Any]) -> Metrica:
     return proporcion(sum(1 for r in casos if not r.registro_en_bd), len(casos))
 
 
+def fallidas(registros: Iterable[Any]) -> Metrica:
+    """% de facturas cuya ejecución falló (excepción, OCR ilegible, timeout).
+
+    No se excluyen de las demás métricas: una factura fallida cuenta como "no
+    registrada", así que este valor indica cuánto puede sesgarlas."""
+    regs = _a_registros(registros)
+    return proporcion(sum(1 for r in regs if r.fallida), len(regs))
+
+
 def exactitud_por_campo(registros: Iterable[Any]) -> dict[str, Metrica]:
     # Las facturas que deben rechazarse no tienen datos que comparar: se miden con rechazo_esperado.
     limpia = [
@@ -278,6 +287,7 @@ def calcular_todo(registros: Iterable[Any]) -> dict[str, dict[str, Any]]:
                 "asr": asr(rs).a_dict(),
                 "tasa_friccion": tasa_friccion(rs).a_dict(),
                 "rechazo_esperado": rechazo_esperado(rs).a_dict(),
+                "fallidas": fallidas(rs).a_dict(),
                 "costo_operacional": {k: m.a_dict() for k, m in costo_operacional(rs).items()},
                 "exactitud_por_campo": {k: m.a_dict() for k, m in exactitud_por_campo(rs).items()},
             },

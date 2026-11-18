@@ -29,7 +29,7 @@ ENCABEZADOS_TABLA: tuple[str, ...] = (
     "latencia promedio (ms)",
     "tokens de entrada promedio",
     "tokens de salida promedio",
-    "Rechazo_Esperado",
+    "Rechazo_Esperado", "Fallidas",
 )
 
 
@@ -172,6 +172,7 @@ def formatear_tabla(metricas_por_sistema: Mapping[str, Any]) -> str:
             _fmt(_valor(costo.get("tokens_entrada")), 1),
             _fmt(_valor(costo.get("tokens_salida")), 1),
             _fmt(_valor(m.get("rechazo_esperado")), 4),
+            _fmt(_valor(m.get("fallidas")), 4),
         ]
         lineas.append("| " + " | ".join(celdas) + " |")
     return "\n".join(lineas) + "\n"

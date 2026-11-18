@@ -43,91 +43,44 @@ Nota: con `mcp` 1.9.1 y pydantic 2.14.x la importación de `mcp` puede fallar (`
 
 ## Requisitos
 
-- Instalar docker 4.38.0 o superior
-- Python 3.10 o superior
-- Gestor de paquetes `pip`
+- Docker Desktop 4.38.0 o superior (recomendado para ejecutar)
+- Python 3.10 o superior y `pip` (solo para la ejecución manual)
 - Una clave de OpenAI (`OPENAI_API_KEY`) o de Anthropic (`ANTHROPIC_API_KEY`) para el OCR
 - Node.js (opcional, solo para el inspector de MCP)
 
 ## Ejecución
 
-Todos los comandos se ejecutan desde esta carpeta (`Backend`).
+Todos los comandos se ejecutan desde esta carpeta (`Backend`). Se recomienda levantar el proyecto con Docker por que es más rápido.
 
-### 1. Crear el entorno e instalar dependencias
+Requisito: Docker Desktop 4.38.0 o superior.
 
-Con pip (PowerShell):
+**Paso 1. Crear el archivo `.env`** en esta carpeta con la clave del LLM (formato dotenv, ver más abajo):
+
+```dotenv
+LLM_PROVIDER=openai
+OPENAI_API_KEY=tu-clave
+MCP_USER_ID=usuario_prueba
+SQLITE_JOURNAL_MODE=DELETE
+```
+**Paso 2. Colocar las imágenes** de facturas en `facturas/`.
+
+**Paso 3. Levantar todo el stack:**
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+docker compose up --build
 ```
 
-Con pip (bash: Linux, macOS o Git Bash en Windows):
+**Paso 4. Abrir Swagger** en `http://127.0.0.1:8000/docs` y probar `/pipeline/run` o `/batch/run`.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate        # en Git Bash en Windows: source .venv/Scripts/activate
-pip install -r requirements.txt
-```
+**Paso 5. Revisar resultados.** Las transacciones quedan en `data/facturas.db` y las trazas en `traces/`.
 
-### 2. Variables de entorno
+Para detener: `docker compose down`. Para usar el agente por CLI dentro de Docker (perfil `cli`, no arranca con `up`):
 
 ```powershell
-$env:OPENAI_API_KEY = "tu-clave"      # OCR con OpenAI (o ANTHROPIC_API_KEY)
-$env:LLM_PROVIDER = "openai"          # openai | anthropic (opcional; se detecta por la clave)
-$env:OCR_MODEL = "gpt-4o"            # opcional; por defecto gpt-4o / claude-sonnet-5-5
-$env:DB_PATH = "./data/facturas.db"   # base de datos SQLite
-$env:MCP_USER_ID = "usuario_prueba"   # usuario de la sesión
-$env:INVOICES_DIR = "./facturas"      # carpeta permitida para imágenes
-$env:SQLITE_JOURNAL_MODE = "DELETE"   # modo de journal de SQLite (ver nota)
+docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg
 ```
 
-Nota sobre `SQLITE_JOURNAL_MODE`: si no se define, SQLite usa `WAL`, que crea los archivos auxiliares `facturas.db-wal` y `facturas.db-shm`. El modo queda guardado en el propio archivo de la base. WAL no funciona sobre el volumen `./data` de Docker Desktop en Windows y macOS (`sqlite3.OperationalError: disk I/O error`), por eso el compose usa `DELETE`. Si comparte `./data/facturas.db` entre la ejecución local y Docker, use también `DELETE` en local. Si no, la base vuelve a WAL y el contenedor deja de abrirla. Valores admitidos: `WAL`, `DELETE`, `TRUNCATE`, `PERSIST`, `MEMORY`; cualquier otro valor se trata como `WAL`.
-
-Estas líneas `$env:` solo aplican a la sesión actual de PowerShell. No las copie al archivo `.env`, que usa otro formato (ver sección 6).
-
-### 3. Ejecutar las pruebas
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-También funciona `python -m pytest tests -v`. En PowerShell puede aparecer ruido de `RemoteException`. Es solo cosmético; lo importante es el `OK` final.
-
-### 4. Levantar el servidor finanzas-mcp
-
-```powershell
-python -m finanzas_mcp.server
-```
-
-Para probarlo de forma interactiva con el inspector de MCP:
-
-```powershell
-npx @modelcontextprotocol/inspector python -m finanzas_mcp.server
-```
-
-### 5. Ejecutar el agente
-
-```powershell
-python -m agent.main .\facturas\batch1-0059.jpg
-```
-
-Los prompts de confirmación se muestran en pantalla y las respuestas se leen del teclado. Al final se imprime el resultado y la razón de parada. Las trazas se guardan en `traces/`.
-
-Si se ejecuta sin ruta (`python -m agent.main`), el agente la pide por teclado cuando hay una terminal interactiva. Si no hay terminal, o si la respuesta queda vacía, imprime el uso con Docker y termina con código 64, sin iniciar los servidores MCP.
-
-Códigos de salida:
-
-| Código | Significado |
-|---|---|
-| 0 | Éxito. |
-| 1 | Error de validación o de arranque. |
-| 2 | Cancelado por el usuario. |
-| 3 | Límite de pasos o de tokens. |
-| 64 | Falta la ruta de la imagen. |
-
-### 6. Docker
+#### Detalles de Docker
 
 ```powershell
 docker compose up --build
@@ -140,8 +93,6 @@ Levanta los dos servidores MCP por **Streamable HTTP** y la API de pruebas con S
 | `api-pruebas` | `http://127.0.0.1:8000/docs` | Swagger. `/pipeline/run` y `/batch/run` llaman a los MCP por HTTP. |
 | `finanzas-mcp` | `http://127.0.0.1:8001/mcp` | MCP de finanzas (`/health` para healthcheck). |
 | `ocr-mcp` | `http://127.0.0.1:8002/mcp` | MCP de OCR (`/health` para healthcheck). |
-
-La API arranca cuando ambos MCP están saludables. Se conecta a ellos con `FINANZAS_MCP_URL` y `OCR_MCP_URL` (ya definidas en el compose); si no están definidas, usa los servicios en proceso. El agente CLI usa las mismas variables si se definen; si no, lanza los MCP por stdio.
 
 Los servidores aceptan `--transport stdio|streamable-http`, `--host` y `--port` (o `MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`); el valor por defecto es `stdio`.
 
@@ -179,9 +130,93 @@ docker compose up -d --build
 
 Si la base sí tiene datos, conviértala en lugar de moverla: `python -c "import sqlite3; c=sqlite3.connect('data/facturas.db'); print(c.execute('PRAGMA journal_mode=DELETE').fetchone())"`. El comando debe imprimir `('delete',)`.
 
-Agente CLI (perfil `cli`, no arranca con `up`): `docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg`.
-
 Cree `.env` con la clave del LLM (y opcionalmente `MCP_USER_ID`, `API_TEST_MODE`) y ponga las imágenes en `facturas/`. Los puertos se publican solo en `127.0.0.1`. Los servicios comparten `./data`, `./facturas` y `./traces`.
+
+
+### Alternativa: ejecución manual
+
+Requisitos: Python 3.10 o superior, `pip` y una clave de OpenAI o Anthropic. Node.js solo si usa el inspector de MCP.
+
+#### Paso 1. Crear el entorno e instalar dependencias
+
+Con pip (PowerShell):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Con pip (bash: Linux, macOS o Git Bash en Windows):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate        # en Git Bash en Windows: source .venv/Scripts/activate
+pip install -r requirements.txt
+```
+
+#### Paso 2. Variables de entorno
+
+```powershell
+$env:OPENAI_API_KEY = "tu-clave"      # OCR con OpenAI (o ANTHROPIC_API_KEY)
+$env:LLM_PROVIDER = "openai"          # openai | anthropic (opcional; se detecta por la clave)
+$env:OCR_MODEL = "gpt-4o"            # opcional; por defecto gpt-4o / claude-sonnet-5-5
+$env:DB_PATH = "./data/facturas.db"   # base de datos SQLite
+$env:MCP_USER_ID = "usuario_prueba"   # usuario de la sesión
+$env:INVOICES_DIR = "./facturas"      # carpeta permitida para imágenes
+$env:SQLITE_JOURNAL_MODE = "DELETE"   # modo de journal de SQLite (ver nota)
+```
+
+Nota sobre `SQLITE_JOURNAL_MODE`: si no se define, SQLite usa `WAL`, que crea los archivos auxiliares `facturas.db-wal` y `facturas.db-shm`. El modo queda guardado en el propio archivo de la base. WAL no funciona sobre el volumen `./data` de Docker Desktop en Windows y macOS (`sqlite3.OperationalError: disk I/O error`), por eso el compose usa `DELETE`. Si comparte `./data/facturas.db` entre la ejecución local y Docker, use también `DELETE` en local. Si no, la base vuelve a WAL y el contenedor deja de abrirla. Valores admitidos: `WAL`, `DELETE`, `TRUNCATE`, `PERSIST`, `MEMORY`; cualquier otro valor se trata como `WAL`.
+
+#### Paso 3. Ejecutar las pruebas
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+También funciona `python -m pytest tests -v`. En PowerShell puede aparecer ruido de `RemoteException`. Es solo cosmético; lo importante es el `OK` final.
+
+#### Paso 4. Levantar el servidor finanzas-mcp
+
+```powershell
+python -m finanzas_mcp.server
+```
+
+Para probarlo de forma interactiva con el inspector de MCP:
+
+```powershell
+npx @modelcontextprotocol/inspector python -m finanzas_mcp.server
+```
+
+#### Paso 5. Ejecutar el agente
+
+```powershell
+python -m agent.main .\facturas\batch1-0059.jpg
+```
+
+Los prompts de confirmación se muestran en pantalla y las respuestas se leen del teclado. Al final se imprime el resultado y la razón de parada. Las trazas se guardan en `traces/`.
+
+Si se ejecuta sin ruta (`python -m agent.main`), el agente la pide por teclado cuando hay una terminal interactiva. Si no hay terminal, o si la respuesta queda vacía, imprime el uso con Docker y termina con código 64, sin iniciar los servidores MCP.
+
+Códigos de salida:
+
+| Código | Significado |
+|---|---|
+| 0 | Éxito. |
+| 1 | Error de validación o de arranque. |
+| 2 | Cancelado por el usuario. |
+| 3 | Límite de pasos o de tokens. |
+| 64 | Falta la ruta de la imagen. |
+
+## Trazas
+
+Cada ejecución del agente escribe un JSON en `traces/`. Además de `entries` (con `seq`, `etapa`, `duracion_ms` y `datos`), incluye:
+
+- `seguridad`: `veredicto_inyeccion` (`sin_indicios`, `detectada_sin_efecto` o `indicios_de_ejecucion`), patrones detectados con su fragmento, campos del OCR descartados, herramientas invocadas y bloqueadas.
+- `factura`: datos leídos por el OCR, correcciones del usuario, datos finales y registro enviado (sin tokens).
+
+El veredicto es una heurística sobre el comportamiento del agente. Las trazas anteriores a este formato no tienen estos campos.
 
 ## Proveedor de LLM
 

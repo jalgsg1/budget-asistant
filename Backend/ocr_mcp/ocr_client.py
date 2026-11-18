@@ -198,6 +198,11 @@ class OcrClient:
         raw_response = self._call_llm(image_data, mime_type)
         print(f"[ocr_client] Raw LLM response length: {len(raw_response)}", file=sys.stderr)
 
+        if self._cargar_json(raw_response) is None:
+            # Respuesta ilegible: se falla de forma explícita (OCR_FAILURE aguas arriba)
+            # en lugar de devolver confianza 0, que se confundiría con un rechazo válido.
+            raise ValueError("La respuesta del LLM no es un JSON válido.")
+
         resultado = self._parse_response(raw_response)
         resultado.uso_tokens = dict(self._ultimo_uso)
         return resultado
@@ -257,15 +262,32 @@ class OcrClient:
                 }
             except (TypeError, ValueError):
                 print("[ocr_client] WARNING: usage_metadata inválido", file=sys.stderr)
-        return str(response.content)
+        return self._texto_de_contenido(response.content)
 
-    def _parse_response(self, raw: str) -> OcrResult:
-        """Parse the LLM JSON response into an ``OcrResult``.
+    @staticmethod
+    def _texto_de_contenido(content: Any) -> str:
+        """Texto de la respuesta del LLM.
 
-        The function is tolerant of minor formatting issues (e.g. markdown
-        code fences) but always returns ``is_untrusted=True``.
+        Con Anthropic ``content`` puede ser una lista de bloques (p. ej. un bloque
+        ``thinking`` con ``signature`` antes del bloque ``text``). ``str(lista)``
+        produce un repr con comillas simples que no es JSON, así que se unen solo
+        los bloques de tipo ``text``.
         """
-        # Strip markdown code fences if present
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            partes: list[str] = []
+            for bloque in content:
+                if isinstance(bloque, str):
+                    partes.append(bloque)
+                elif isinstance(bloque, dict) and bloque.get("type") == "text":
+                    partes.append(str(bloque.get("text", "")))
+            return "".join(partes)
+        return str(content)
+
+    @staticmethod
+    def _cargar_json(raw: str) -> dict[str, Any] | None:
+        """JSON de la respuesta (quita vallas markdown); ``None`` si no es un objeto JSON."""
         cleaned = raw.strip()
         if cleaned.startswith("```"):
             lines = cleaned.splitlines()
@@ -273,12 +295,22 @@ class OcrClient:
             start = 1 if lines[0].startswith("```") else 0
             end = len(lines) - 1 if lines[-1].strip() == "```" else len(lines)
             cleaned = "\n".join(lines[start:end])
-
         try:
-            data: dict[str, Any] = json.loads(cleaned)
-        except json.JSONDecodeError as exc:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError:
+            return None
+        return data if isinstance(data, dict) else None
+
+    def _parse_response(self, raw: str) -> OcrResult:
+        """Parse the LLM JSON response into an ``OcrResult``.
+
+        The function is tolerant of minor formatting issues (e.g. markdown
+        code fences) but always returns ``is_untrusted=True``.
+        """
+        data = self._cargar_json(raw)
+        if data is None:
             print(
-                f"[ocr_client] ERROR: could not parse LLM response as JSON: {exc}",
+                "[ocr_client] ERROR: could not parse LLM response as JSON",
                 file=sys.stderr,
             )
             print(f"[ocr_client] Raw response was: {raw[:500]}", file=sys.stderr)

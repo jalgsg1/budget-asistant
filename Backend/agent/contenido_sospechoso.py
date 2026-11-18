@@ -78,6 +78,27 @@ class ResultadoEscaneo:
     motivo_fallo: str | None
 
 
+def evidencia(texto: object, ids: tuple[str, ...], ancho: int = 40) -> list[dict]:
+    """Fragmento corto (±``ancho`` caracteres) donde coincidió cada patrón, para auditoría.
+
+    No guarda el texto completo; cada fragmento se trunca y se limpian los saltos de línea.
+    """
+    if not isinstance(texto, str):
+        return []
+    muestra = texto[:MAX_CARACTERES]
+    out: list[dict] = []
+    for p in PATRONES:
+        if p.id not in ids:
+            continue
+        m = p.regex.search(muestra)
+        if not m:
+            continue
+        ini, fin = max(0, m.start() - ancho), min(len(muestra), m.end() + ancho)
+        frag = re.sub(r"\s+", " ", muestra[ini:fin]).strip()
+        out.append({"patron": p.id, "categoria": p.categoria, "fragmento": frag[:160]})
+    return out
+
+
 def escanear(texto: object) -> ResultadoEscaneo:
     """Escanea `texto` contra PATRONES. Pura y determinista."""
     try:

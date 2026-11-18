@@ -84,6 +84,14 @@ def _mime(ruta: str) -> str:
     return mimetypes.guess_type(ruta)[0] or "image/jpeg"
 
 
+def _describir_error(exc: BaseException) -> str:
+    """Tipo de la excepción; para ``sqlite3.IntegrityError`` añade la restricción violada
+    (p. ej. ``NOT NULL constraint failed: transactions.comercio``) para saber qué campo falló."""
+    if isinstance(exc, sqlite3.IntegrityError):
+        return f"{type(exc).__name__}: {exc}"[:200]
+    return type(exc).__name__
+
+
 def _insertar(ruta_bd: str, args: dict, sesion: _Sesion) -> None:
     """BEGIN/INSERT/COMMIT en conexión propia; ROLLBACK ante cualquier error."""
     conn = sqlite3.connect(ruta_bd, isolation_level=None)
@@ -170,7 +178,7 @@ class ProcesadorBaseline:
                 else:
                     indicacion = "timeout"
             except Exception as exc:  # noqa: BLE001
-                indicacion = type(exc).__name__
+                indicacion = _describir_error(exc)
         finally:
             pool.shutdown(wait=False)
         if indicacion is not None:
