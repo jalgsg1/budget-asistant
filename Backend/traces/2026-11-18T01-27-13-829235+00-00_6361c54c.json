@@ -1,0 +1,182 @@
+{
+  "trace_id": "6361c54c-c5c8-4c83-83ef-824a51c0cfd0",
+  "user_id": "usuario_prueba",
+  "image_path": "batch1-0056.jpg",
+  "entries": [
+    {
+      "step": 1,
+      "action": "ocr_imagen",
+      "input_summary": "keys=['ruta']",
+      "output_summary": "ok",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-18T01:27:16.974697+00:00",
+      "seq": 1,
+      "etapa": "extraer",
+      "duracion_ms": 3145,
+      "datos": {
+        "servidor": "finanzas_mcp",
+        "herramienta": "ocr_imagen",
+        "argumentos": {
+          "ruta": "batch1-0056.jpg"
+        },
+        "resultado": {
+          "claves": [
+            "notice",
+            "result",
+            "untrusted_content"
+          ]
+        }
+      }
+    },
+    {
+      "step": 2,
+      "action": "validar_factura",
+      "input_summary": "keys=['categoria', 'comercio', 'descripcion', 'fecha', 'iva', 'moneda', 'subtotal', 'total'] total=494.89 moneda=USD",
+      "output_summary": "ok",
+      "tool_called": "validar_factura",
+      "timestamp": "2026-11-18T01:27:17.004718+00:00",
+      "seq": 2,
+      "etapa": "validar",
+      "duracion_ms": 29,
+      "datos": {
+        "servidor": "finanzas_mcp",
+        "herramienta": "validar_factura",
+        "argumentos": {
+          "comercio": "Terry, Crawford and Vega",
+          "fecha": "2012-02-21",
+          "total": 494.89,
+          "moneda": "USD",
+          "categoria": "Ropa",
+          "subtotal": 449.9,
+          "iva": 44.99,
+          "descripcion": "Purchase of 6 types of dresses (Escada, Boden, J crew, Xhileration, Bcbgeneration, Papaya)"
+        },
+        "resultado": {
+          "is_valid": true,
+          "errors": []
+        }
+      }
+    },
+    {
+      "step": 3,
+      "action": "buscar_duplicados",
+      "input_summary": "keys=['comercio', 'fecha', 'total'] total=494.89",
+      "output_summary": "ok",
+      "tool_called": "buscar_duplicados",
+      "timestamp": "2026-11-18T01:27:17.029138+00:00",
+      "seq": 3,
+      "etapa": "duplicados",
+      "duracion_ms": 24,
+      "datos": {
+        "servidor": "finanzas_mcp",
+        "herramienta": "buscar_duplicados",
+        "argumentos": {
+          "comercio": "Terry, Crawford and Vega",
+          "fecha": "2012-02-21",
+          "total": 494.89
+        },
+        "resultado": [
+          {
+            "id": 3,
+            "user_id": "usuario_prueba",
+            "comercio": "Terry, Crawford and Vega",
+            "fecha": "2012-02-21",
+            "total": 494.89,
+            "moneda": "USD",
+            "categoria": "Ropa",
+            "subtotal": 449.9,
+            "iva": 44.99,
+            "descripcion": "Compra de vestidos de mujer (Escada, Boden, J Crew, Xhileration, Bcbgeneration, Papaya)",
+            "created_at": "2026-11-18T01:25:20Z"
+          }
+        ]
+      }
+    },
+    {
+      "step": 4,
+      "action": "duplicate_confirmation",
+      "input_summary": "Posibles duplicados:\n  - Terry, Crawford and Vega | 2012-02-21 | 494.89 USD\n¿Registrar de todos modos? (si/no): ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-18T01:27:17.029227+00:00",
+      "seq": 4,
+      "etapa": "duplicados",
+      "duracion_ms": 0,
+      "datos": null
+    },
+    {
+      "step": 4,
+      "action": "termination",
+      "input_summary": "",
+      "output_summary": "El usuario no confirmó continuar tras detectar duplicados. La transacción NO fue guardada.",
+      "tool_called": null,
+      "timestamp": "2026-11-18T01:27:17.029273+00:00",
+      "seq": 5,
+      "etapa": "fin",
+      "duracion_ms": null,
+      "datos": null
+    }
+  ],
+  "final_status": "user_abort",
+  "termination_reason": "user_rejection",
+  "created_at": "2026-11-18T01:27:13.829235+00:00",
+  "transaction_id": null,
+  "decision_hitl": null,
+  "alertas_hitl": [],
+  "patrones_sospechosos": [],
+  "motivo_fallo_escaneo": null,
+  "ocr": {
+    "confianza_ocr": 0.92,
+    "llamadas_ocr": 1,
+    "umbral_confianza_ocr": 0.75
+  },
+  "tokens_entrada": 5330,
+  "tokens_salida": 207,
+  "seguridad": {
+    "veredicto_inyeccion": "sin_indicios",
+    "indicios_de_ejecucion": [],
+    "contenido_sospechoso": false,
+    "patrones": [],
+    "evidencia": [],
+    "campos_ocr_descartados": [],
+    "texto_ocr": {
+      "longitud": 260,
+      "sha256": "6ffc031d8cc74247ad5e03782e3c9675aa0f0e735ee9ea9859d3879f12bd78e8"
+    },
+    "herramientas_invocadas": {
+      "ocr_imagen": 1,
+      "validar_factura": 1,
+      "buscar_duplicados": 1
+    },
+    "herramientas_bloqueadas": [],
+    "hitl_solicitado": false,
+    "token_automatico": false
+  },
+  "factura": {
+    "datos_ocr": {
+      "comercio": "Terry, Crawford and Vega",
+      "fecha": "2012-02-21",
+      "total": 494.89,
+      "moneda": "USD",
+      "categoria": "Ropa",
+      "subtotal": 449.9,
+      "iva": 44.99,
+      "descripcion": "Purchase of 6 types of dresses (Escada, Boden, J crew, Xhileration, Bcbgeneration, Papaya)"
+    },
+    "correcciones_usuario": [],
+    "datos_finales": {
+      "comercio": "Terry, Crawford and Vega",
+      "fecha": "2012-02-21",
+      "total": 494.89,
+      "moneda": "USD",
+      "categoria": "Ropa",
+      "subtotal": 449.9,
+      "iva": 44.99,
+      "descripcion": "Purchase of 6 types of dresses (Escada, Boden, J crew, Xhileration, Bcbgeneration, Papaya)"
+    },
+    "registro_enviado": null,
+    "n_duplicados": 1,
+    "resultado": "user_abort",
+    "transaction_id": null
+  }
+}

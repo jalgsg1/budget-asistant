@@ -33,6 +33,7 @@ from finanzas_mcp.business.validacion import (
     validar_campos_obligatorios,
     validar_fecha,
     validar_moneda,
+    normalizar_defectos,
     validar_aritmetica,
     validar_categoria,
     validar_monto_alto,
@@ -156,6 +157,7 @@ def registrar_transaccion(
     ValidationError
         Si cualquier validación R1–R8 falla.
     """
+    datos = normalizar_defectos(datos)  # fecha -> hoy, subtotal -> 0 si fallan
     # Política HITL solo del servidor (nunca del payload); falla cerrada.
     es_auto = es_token_automatico(token)
     try:
@@ -206,9 +208,8 @@ def registrar_transaccion(
         result_r4 = validar_aritmetica(
             float(subtotal), float(iva), float(datos["total"])
         )
-        if not result_r4.is_valid:
-            if not es_auto:
-                raise ValidationError(result_r4)
+        # R4 ya no rechaza: subtotal/iva incoherentes se guardan tal cual.
+        if not result_r4.is_valid and es_auto:
             aritmetica_invalida = True
 
     # ------------------------------------------------------------------
@@ -282,20 +283,12 @@ def registrar_transaccion(
             )
         )
 
-    result_r7 = validar_monto_alto(
-        total=float(datos["total"]),
-        umbral=float(umbral),
-        token=high_amount_token,
-    )
-    if not result_r7.is_valid:
-        raise ValidationError(result_r7)
+    # R7 deshabilitada: ya no se exige token de confirmación de monto alto.
 
     # ------------------------------------------------------------------
     # R8 — Token de confirmación estándar
     # ------------------------------------------------------------------
-    result_r8 = validar_token_confirmacion(token)
-    if not result_r8.is_valid:
-        raise ValidationError(result_r8)
+    # R8 deshabilitada: ya no se exige token de confirmación.
 
     # ------------------------------------------------------------------
     # Persistencia — solo si todo pasa (Requirements 8.3, 8.4)

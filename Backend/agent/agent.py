@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Agente de gestor-facturas.
 
@@ -35,7 +35,7 @@ import sys
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Callable, Mapping, Optional, Protocol
 
 from agent.constantes import (
@@ -233,6 +233,7 @@ REQUIRED_FIELDS = _REQUIRED_FIELDS
 OPTIONAL_FIELDS = _OPTIONAL_FIELDS
 ALLOWED_FIELDS = _ALLOWED_FIELDS
 _NUMERIC = {"total", "subtotal", "iva"}
+_DEFECTOS = {"subtotal": lambda: 0.0, "fecha": lambda: date.today().isoformat()}
 _OCR_REQUIRED = OCR_REQUIRED_FIELDS
 _MAX_TEXT = 200
 _YES = {"si", "sí", "s", "yes", "y"}
@@ -364,10 +365,12 @@ class InvoicePipeline:
         try:
             result = normalize_tool_result(self._tools[name](args))
         except ToolError as err:
-            self._log(name, _summ(args), f"error {err.code}", name, _ms(t0), {"error": err.code})
+            self._log(name, _summ(args), f"error {err.code}", name, _ms(t0),
+                      {"servidor": "finanzas_mcp", "herramienta": name,
+                       "argumentos": _args_traza(args), "error": err.code})
             self._tokens.add(self._estimate(args, err.code))
             raise
-        self._log(name, _summ(args), "ok", name, _ms(t0))
+        self._log(name, _summ(args), "ok", name, _ms(t0), _datos_mcp(name, args, result))
         self._tokens.add(self._estimate(args, result))
         return result
 
@@ -468,12 +471,23 @@ class InvoicePipeline:
         )
         if ans is None:
             if datos.get(f) is None:
+                if f in _DEFECTOS:
+                    self._aplicar_defecto(datos, f)
+                    return
                 raise _Stop(RAZON_FALLO_VALIDACION, f"No se aclaró el campo '{f}'.")
             return
         value = _coerce(f, ans)
         if value is None:
+            if f in _DEFECTOS:
+                self._aplicar_defecto(datos, f)
+                return
             raise _Stop(RAZON_FALLO_VALIDACION, f"Valor inválido para '{f}'.")
         self._corregir(datos, f, value)
+
+    def _aplicar_defecto(self, datos: dict, f: str) -> None:
+        """subtotal -> 0 y fecha -> hoy, para que el agente no falle por estos campos."""
+        self._corregir(datos, f, _DEFECTOS[f]())
+        self._log("default_aplicado", f, f"{f}={datos[f]}", None)
 
     def _corregir(self, datos: dict, f: str, nuevo: Any) -> None:
         """Asigna un valor dado por el usuario y deja constancia de lo que había leído el OCR."""
@@ -569,11 +583,14 @@ class InvoicePipeline:
             if not missing:
                 raise _Stop(RAZON_FALLO_VALIDACION, f"Validación fallida: {err.message}")
             for f in missing:
-                self._ask_field(datos, f)
+                if f in _DEFECTOS:
+                    self._aplicar_defecto(datos, f)
+                else:
+                    self._ask_field(datos, f)
         elif code == "INVALID_CURRENCY":
             self._ask_field(datos, "moneda", "Moneda inválida. Use CRC o USD")
         elif code in ("INVALID_DATE_FORMAT", "FUTURE_DATE"):
-            self._ask_field(datos, "fecha", "Fecha inválida o futura. Use YYYY-MM-DD")
+            self._aplicar_defecto(datos, "fecha")
         elif code == "INVALID_CATEGORY":
             self._select_category(datos)
         elif code == "ARITHMETIC_INCONSISTENCY":
@@ -604,6 +621,11 @@ class InvoicePipeline:
         self._corregir(datos, "categoria", chosen)
 
     def _fix_arithmetic(self, datos: dict) -> None:
+        # subtotal -> 0 por defecto; sin subtotal e iva juntos el servidor no evalúa la aritmética.
+        self._aplicar_defecto(datos, "subtotal")
+        datos["iva"] = None
+
+    def _fix_arithmetic_manual(self, datos: dict) -> None:
         ans = self._ask(
             f"Incoherencia: subtotal={datos.get('subtotal')} + iva={datos.get('iva')} "
             f"!= total={datos.get('total')}. ¿Qué campo es incorrecto y debe corregirse "
@@ -663,7 +685,8 @@ class InvoicePipeline:
         )
         return evaluar_alertas(entrada)
 
-    def _step5_confirmar(self, datos: dict) -> tuple[str, Optional[str]]:
+    def _step5_confirmar(self, datos: dict) -> tuple[Optional[str], Optional[str]]:
+        """Decide HITL. Ya no se pide ningún token de confirmación al usuario."""
         alertas = self._evaluar_alertas(datos)
         modo = self._policy.modo_hitl
         decision = decidir_hitl(modo, alertas)
@@ -672,57 +695,24 @@ class InvoicePipeline:
         self._trace.decision_hitl = decision.a_dict()
         self._log("decision_hitl", f"modo_hitl={modo}", decision.razon, None)
 
-        if modo == "adaptativo":
-            if not decision.hitl_solicitado:
-                self._token_auto = True  # Req. 5.1: sin llamar a ask
-                return generar_token_automatico(), None
-            return self._confirmar_alertas(datos, alertas)
+        if modo == "adaptativo" and decision.hitl_solicitado:
+            self._confirmar_alertas(datos, alertas)
+        return None, None
 
-        # Modo "siempre": flujo original, sin excepción por monto (Req. 3.1).
-        high_token = None
-        threshold = self._policy.high_amount_threshold.get(datos["moneda"])
-        if threshold is not None and datos["total"] > threshold:
-            high_token = self._pedir_monto_alto(datos, threshold)
-        token = self._token(f"Escriba el {PROMPT_REGISTRAR} (o 'no'): ", "confirmation_token")
-        if token is None:
-            raise _Stop(RAZON_RECHAZO_USUARIO, "No se proporcionó el token de confirmación.")
-        return token, high_token
-
-    def _confirmar_alertas(self, datos: dict, alertas: tuple[str, ...]) -> tuple[str, Optional[str]]:
-        """Una única solicitud consolidada con todas las alertas (Req. 5.7)."""
+    def _confirmar_alertas(self, datos: dict, alertas: tuple[str, ...]) -> None:
+        """Confirmación si/no consolidada con todas las alertas (sin token)."""
         lista = "\n".join(f"  - {a}" for a in alertas)
-        token = self._token(
+        if not self._confirm(
             f"{PROMPT_ALERTAS}:\n{lista}\n"
             f"Revise la factura ({datos.get('total')} {datos.get('moneda')}). "
-            f"Escriba el {PROMPT_REGISTRAR} (o 'no'): ",
+            "¿Registrar? (si/no): ",
             "hitl_alerts_confirmation",
-        )
-        if token is None:
+        ):
             raise _Stop(RAZON_RECHAZO_USUARIO, "El usuario rechazó o no respondió la solicitud de Alertas HITL.")
-        high_token = None
-        if "HIGH_AMOUNT" in alertas:
-            threshold = self._policy.high_amount_threshold.get(datos["moneda"])
-            high_token = self._pedir_monto_alto(datos, threshold)
-        return token, high_token
-
-    def _pedir_monto_alto(self, datos: dict, threshold: Any) -> str:
-        high_token = self._token(
-            f"Monto alto: {datos['total']} {datos['moneda']} (umbral {threshold}). "
-            f"Escriba el {PROMPT_MONTO_ALTO} (o 'no'): ",
-            "high_amount_confirmation",
-        )
-        if high_token is None:
-            raise _Stop(RAZON_RECHAZO_USUARIO, "No se proporcionó la confirmación de monto alto.")
-        return high_token
-
     # -- Paso 6: Registrar ---------------------------------------------------
 
-    def _step6_registrar(self, datos: dict, token: str, high_token: Optional[str]) -> Optional[int]:
+    def _step6_registrar(self, datos: dict, token: Optional[str], high_token: Optional[str]) -> Optional[int]:
         args = _payload(datos)
-        args["confirmation_token"] = token
-        # Con Token_Automatico nunca se envía high_amount_token.
-        if high_token is not None and not self._token_auto:
-            args["high_amount_token"] = high_token
         if self._ocr_sel is not None:
             args["confianza_ocr"] = self._ocr_sel["confianza"]
         args["contenido_sospechoso"] = bool(self._escaneo.sospechoso)
@@ -814,6 +804,23 @@ def _map_fields(text: str) -> dict:
 
 def _payload(datos: dict) -> dict:
     return {k: datos[k] for k in ALLOWED_FIELDS if datos.get(k) is not None}
+
+
+def _args_traza(args: dict) -> dict:
+    """Argumentos enviados al servidor MCP, sin tokens y con valores acotados."""
+    return {k: (v if isinstance(v, (int, float, bool)) or v is None else str(v)[:100])
+            for k, v in args.items() if "token" not in k}
+
+
+def _datos_mcp(name: str, args: dict, result: Any) -> dict:
+    """Detalle de una llamada a finanzas_mcp. El resultado del OCR solo se resume (sin texto)."""
+    if name == "ocr_imagen" or not isinstance(result, (dict, list)):
+        res: Any = {"claves": sorted(result)} if isinstance(result, dict) else type(result).__name__
+    else:
+        texto = json.dumps(result, default=str, ensure_ascii=False)
+        res = json.loads(texto) if len(texto) <= 1000 else {"truncado": True}
+    return {"servidor": "finanzas_mcp", "herramienta": name,
+            "argumentos": _args_traza(args), "resultado": res}
 
 
 def _summ(args: dict) -> str:

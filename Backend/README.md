@@ -110,27 +110,24 @@ SQLITE_JOURNAL_MODE=DELETE
 
 Si el `.env` tiene sintaxis de PowerShell, Compose falla con `unexpected character "$" in variable name`.
 
-#### Solución de problemas
 
-Si `http://127.0.0.1:8000/docs` responde `ERR_CONNECTION_REFUSED`, el servicio `api-pruebas` no está corriendo. Revise el estado y los logs:
+### Endpoints
 
-```powershell
-docker compose ps -a
-docker compose logs --tail 50 api-pruebas
-```
+| Método y ruta | Función |
+|---|---|
+| `POST /ocr` | Extrae datos de una imagen subida. El resultado se marca como contenido no confiable. |
+| `POST /validar` | Valida los datos de una factura. |
+| `GET /transacciones` | Lista las transacciones del usuario. |
+| `POST /pipeline/run` | Ejecuta el pipeline sobre una imagen (`ruta`, `respuestas`). |
+| `POST /batch/run` | Procesa todas las imágenes de una subcarpeta de `INVOICES_DIR`. |
+| `GET /batch` | Lista los Batches del usuario, del más reciente al más antiguo. |
+| `GET /batch/{batch_id}` | Reporte de un Batch. |
+| `GET /trazas` | Lista las trazas del usuario (incluye las de Batch). |
+| `GET /trazas/{trace_id}` | Traza completa, con datos sensibles redactados. |
+| `POST /test/reset` | Elimina las transacciones del usuario. Solo modo de pruebas. |
+| `POST /test/seed` | Inserta transacciones de prueba. Solo modo de pruebas. |
 
-Si `GET /transacciones` (o cualquier acceso a la base) responde `INTERNAL_ERROR` y los logs muestran `disk I/O error`, la base quedó en modo WAL. Detenga los contenedores, cierre cualquier programa que tenga abierta la base y mueva los tres archivos a un respaldo. La base se vuelve a crear vacía al arrancar, así que haga esto solo si la base no tiene datos que necesite:
-
-```powershell
-docker compose stop
-New-Item -ItemType Directory data\respaldo_wal -Force
-Move-Item data\facturas.db* data\respaldo_wal\
-docker compose up -d --build
-```
-
-Si la base sí tiene datos, conviértala en lugar de moverla: `python -c "import sqlite3; c=sqlite3.connect('data/facturas.db'); print(c.execute('PRAGMA journal_mode=DELETE').fetchone())"`. El comando debe imprimir `('delete',)`.
-
-Cree `.env` con la clave del LLM (y opcionalmente `MCP_USER_ID`, `API_TEST_MODE`) y ponga las imágenes en `facturas/`. Los puertos se publican solo en `127.0.0.1`. Los servicios comparten `./data`, `./facturas` y `./traces`.
+No existen `/health`, `/config`, `/duplicados` ni `POST /transacciones`. Los endpoints `/test/*` responden 403 si `API_TEST_MODE` no es `true` (`TEST_MODE_DISABLED`) o si la base no está permitida (`TEST_DB_NOT_ALLOWED`).
 
 
 ### Alternativa: ejecución manual
@@ -257,24 +254,6 @@ El host por defecto es `127.0.0.1`. Si se usa otro host, el lanzador imprime una
 | `MAX_IMAGE_BYTES` | Tamaño máximo de imagen subida a `/ocr`. Por defecto 10 MiB. |
 | `BATCH_MAX_IMAGES` | Máximo de imágenes por Batch, entre 1 y 100. Por defecto 100. |
 | `BATCH_TRACES_DIR` | Carpeta de resultados de Batch. Por defecto `<TRACES_DIR>/batch`. |
-
-### Endpoints
-
-| Método y ruta | Función |
-|---|---|
-| `POST /ocr` | Extrae datos de una imagen subida. El resultado se marca como contenido no confiable. |
-| `POST /validar` | Valida los datos de una factura. |
-| `GET /transacciones` | Lista las transacciones del usuario. |
-| `POST /pipeline/run` | Ejecuta el pipeline sobre una imagen (`ruta`, `respuestas`). |
-| `POST /batch/run` | Procesa todas las imágenes de una subcarpeta de `INVOICES_DIR`. |
-| `GET /batch` | Lista los Batches del usuario, del más reciente al más antiguo. |
-| `GET /batch/{batch_id}` | Reporte de un Batch. |
-| `GET /trazas` | Lista las trazas del usuario (incluye las de Batch). |
-| `GET /trazas/{trace_id}` | Traza completa, con datos sensibles redactados. |
-| `POST /test/reset` | Elimina las transacciones del usuario. Solo modo de pruebas. |
-| `POST /test/seed` | Inserta transacciones de prueba. Solo modo de pruebas. |
-
-No existen `/health`, `/config`, `/duplicados` ni `POST /transacciones`. Los endpoints `/test/*` responden 403 si `API_TEST_MODE` no es `true` (`TEST_MODE_DISABLED`) o si la base no está permitida (`TEST_DB_NOT_ALLOWED`).
 
 ### Batch
 

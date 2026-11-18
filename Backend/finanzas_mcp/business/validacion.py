@@ -34,6 +34,25 @@ _CAMPOS_OBLIGATORIOS: tuple[str, ...] = CAMPOS_OBLIGATORIOS
 
 
 # ---------------------------------------------------------------------------
+# Valores por defecto (subtotal y fecha no deben bloquear el registro)
+# ---------------------------------------------------------------------------
+
+def normalizar_defectos(datos: dict) -> dict:
+    """Devuelve una copia con ``fecha`` = hoy si falta/es inválida/futura y
+    ``subtotal`` = 0 si falta o no es numérico."""
+    out = dict(datos)
+    if not validar_fecha(out.get("fecha")).is_valid:
+        out["fecha"] = date.today().isoformat()
+    try:
+        if out.get("subtotal") is None or isinstance(out["subtotal"], bool):
+            raise ValueError
+        float(out["subtotal"])
+    except (TypeError, ValueError):
+        out["subtotal"] = 0.0
+    return out
+
+
+# ---------------------------------------------------------------------------
 # R1 — Campos obligatorios
 # ---------------------------------------------------------------------------
 

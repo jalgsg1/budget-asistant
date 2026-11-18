@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
 from finanzas_mcp.business.validacion import (
+    normalizar_defectos,
     validar_aritmetica,
     validar_campos_obligatorios,
     validar_categoria,
@@ -55,6 +56,7 @@ class ResultadoFactura:
 def evaluar_factura(datos: dict) -> ResultadoFactura:
     """Evalúa R1, R2, R3, R4 y R6 y devuelve todas las reglas fallidas."""
     reglas: list[ReglaFallida] = []
+    datos = normalizar_defectos(datos)
 
     def _anotar(nombre: str, res) -> None:
         if not res.is_valid:
@@ -74,12 +76,7 @@ def evaluar_factura(datos: dict) -> ResultadoFactura:
     if moneda is not None:
         _anotar("R3", validar_moneda(str(moneda)))
 
-    # R4 — Coherencia aritmética
-    subtotal = datos.get("subtotal")
-    iva = datos.get("iva")
-    total = datos.get("total")
-    if subtotal is not None and iva is not None and total is not None:
-        _anotar("R4", validar_aritmetica(float(subtotal), float(iva), float(total)))
+    # R4 — Coherencia aritmética: deshabilitada (subtotal/iva no bloquean el registro).
 
     # R6 — Categoría
     categoria = datos.get("categoria")

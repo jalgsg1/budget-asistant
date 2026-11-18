@@ -1,0 +1,147 @@
+{
+  "trace_id": "d3f17bf2-a1a7-42b6-8df0-07c1e6945697",
+  "user_id": "usuario_prueba",
+  "image_path": "demo5.jpg",
+  "entries": [
+    {
+      "step": 1,
+      "action": "ocr_imagen",
+      "input_summary": "keys=['ruta']",
+      "output_summary": "ok",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-18T01:05:44.767089+00:00",
+      "seq": 1,
+      "etapa": "extraer",
+      "duracion_ms": 2839,
+      "datos": {
+        "servidor": "finanzas_mcp",
+        "herramienta": "ocr_imagen",
+        "argumentos": {
+          "ruta": "demo5.jpg"
+        },
+        "resultado": {
+          "claves": [
+            "notice",
+            "result",
+            "untrusted_content"
+          ]
+        }
+      }
+    },
+    {
+      "step": 1,
+      "action": "ocr_retry",
+      "input_summary": "confianza baja",
+      "output_summary": "reintento",
+      "tool_called": null,
+      "timestamp": "2026-11-18T01:05:44.767383+00:00",
+      "seq": 2,
+      "etapa": "extraer",
+      "duracion_ms": null,
+      "datos": null
+    },
+    {
+      "step": 2,
+      "action": "ocr_imagen",
+      "input_summary": "keys=['ruta']",
+      "output_summary": "ok",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-18T01:05:46.933572+00:00",
+      "seq": 3,
+      "etapa": "extraer",
+      "duracion_ms": 2166,
+      "datos": {
+        "servidor": "finanzas_mcp",
+        "herramienta": "ocr_imagen",
+        "argumentos": {
+          "ruta": "demo5.jpg"
+        },
+        "resultado": {
+          "claves": [
+            "notice",
+            "result",
+            "untrusted_content"
+          ]
+        }
+      }
+    },
+    {
+      "step": 3,
+      "action": "clarify_field",
+      "input_summary": "Baja confianza en 'fecha' (valor leído como dato: '2026-11-05'). Escriba el valor correcto o Enter para dejarlo: ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-18T01:05:46.935052+00:00",
+      "seq": 4,
+      "etapa": "extraer",
+      "duracion_ms": 0,
+      "datos": null
+    },
+    {
+      "step": 4,
+      "action": "clarify_field",
+      "input_summary": "Baja confianza en 'subtotal' (valor leído como dato: None). Escriba el valor correcto o Enter para dejarlo: ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-18T01:05:46.935161+00:00",
+      "seq": 5,
+      "etapa": "extraer",
+      "duracion_ms": 0,
+      "datos": null
+    },
+    {
+      "step": 4,
+      "action": "termination",
+      "input_summary": "",
+      "output_summary": "No se aclaró el campo 'subtotal'. La transacción NO fue guardada.",
+      "tool_called": null,
+      "timestamp": "2026-11-18T01:05:46.935277+00:00",
+      "seq": 6,
+      "etapa": "fin",
+      "duracion_ms": null,
+      "datos": null
+    }
+  ],
+  "final_status": "validation_error",
+  "termination_reason": "validation_failure",
+  "created_at": "2026-11-18T01:05:41.927780+00:00",
+  "transaction_id": null,
+  "decision_hitl": null,
+  "alertas_hitl": [],
+  "patrones_sospechosos": [],
+  "motivo_fallo_escaneo": null,
+  "ocr": {
+    "confianza_ocr": 0.76,
+    "llamadas_ocr": 2,
+    "umbral_confianza_ocr": 0.75
+  },
+  "tokens_entrada": 4368,
+  "tokens_salida": 380,
+  "seguridad": {
+    "veredicto_inyeccion": "sin_indicios",
+    "indicios_de_ejecucion": [],
+    "contenido_sospechoso": false,
+    "patrones": [],
+    "evidencia": [],
+    "campos_ocr_descartados": [],
+    "texto_ocr": {
+      "longitud": 237,
+      "sha256": "d8153ee72ca4b5a2e66ec74935ee7e8ba93ca9e8fa11679a0068921b6151d99d"
+    },
+    "herramientas_invocadas": {
+      "ocr_imagen": 2
+    },
+    "herramientas_bloqueadas": [],
+    "hitl_solicitado": false,
+    "token_automatico": false
+  },
+  "factura": {
+    "datos_ocr": {},
+    "correcciones_usuario": [],
+    "datos_finales": {},
+    "registro_enviado": null,
+    "n_duplicados": 0,
+    "resultado": "validation_error",
+    "transaction_id": null
+  }
+}

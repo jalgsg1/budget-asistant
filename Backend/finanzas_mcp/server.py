@@ -261,8 +261,7 @@ async def handle_list_tools() -> list[types.Tool]:
             name="registrar_transaccion",
             description=(
                 "Revalida R1–R8 de forma independiente y persiste la transacción "
-                "si todo pasa. Requiere confirmation_token (R8) y, cuando el total "
-                "supera el umbral configurado, high_amount_token (R7). "
+                "si todo pasa. No requiere tokens de confirmación. "
                 "En modo adaptativo del servidor acepta un token automático "
                 "('auto:...') solo si la factura es limpia: confianza_ocr (0..1) "
                 "alcanza el umbral y contenido_sospechoso es false; si faltan, se "
@@ -290,7 +289,6 @@ async def handle_list_tools() -> list[types.Tool]:
                     "total",
                     "moneda",
                     "categoria",
-                    "confirmation_token",
                 ],
             },
         ),

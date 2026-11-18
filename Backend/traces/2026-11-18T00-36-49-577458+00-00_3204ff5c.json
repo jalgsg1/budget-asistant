@@ -1,0 +1,89 @@
+{
+  "trace_id": "3204ff5c-9bae-41a1-ac6f-0d6ffc44ddde",
+  "user_id": "usuario_prueba",
+  "image_path": "batch1-0059.jpg",
+  "entries": [
+    {
+      "step": 1,
+      "action": "ocr_imagen",
+      "input_summary": "keys=['ruta']",
+      "output_summary": "ok",
+      "tool_called": "ocr_imagen",
+      "timestamp": "2026-11-18T00:36:54.266755+00:00"
+    },
+    {
+      "step": 2,
+      "action": "validar_factura",
+      "input_summary": "keys=['categoria', 'comercio', 'descripcion', 'fecha', 'iva', 'moneda', 'subtotal', 'total'] total=1255.0 moneda=USD",
+      "output_summary": "ok",
+      "tool_called": "validar_factura",
+      "timestamp": "2026-11-18T00:36:54.335854+00:00"
+    },
+    {
+      "step": 3,
+      "action": "buscar_duplicados",
+      "input_summary": "keys=['comercio', 'fecha', 'total'] total=1255.0",
+      "output_summary": "ok",
+      "tool_called": "buscar_duplicados",
+      "timestamp": "2026-11-18T00:36:54.368367+00:00"
+    },
+    {
+      "step": 4,
+      "action": "duplicate_confirmation",
+      "input_summary": "Posibles duplicados:\n  - James PLC | 2019-05-16 | 1255.0 USD\n¿Registrar de todos modos? (si/no): ",
+      "output_summary": "respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-18T00:36:54.368478+00:00"
+    },
+    {
+      "step": 4,
+      "action": "decision_hitl",
+      "input_summary": "modo_hitl=siempre",
+      "output_summary": "modo_hitl=siempre",
+      "tool_called": null,
+      "timestamp": "2026-11-18T00:36:54.368559+00:00"
+    },
+    {
+      "step": 5,
+      "action": "high_amount_confirmation",
+      "input_summary": "Monto alto: 1255.0 USD (umbral 100.0). Escriba el token de confirmación de monto alto (o 'no'): ",
+      "output_summary": "sin respuesta",
+      "tool_called": null,
+      "timestamp": "2026-11-18T00:36:54.368585+00:00"
+    },
+    {
+      "step": 5,
+      "action": "termination",
+      "input_summary": "",
+      "output_summary": "No se proporcionó la confirmación de monto alto. La transacción NO fue guardada.",
+      "tool_called": null,
+      "timestamp": "2026-11-18T00:36:54.368629+00:00"
+    }
+  ],
+  "final_status": "user_abort",
+  "termination_reason": "user_rejection",
+  "created_at": "2026-11-18T00:36:49.577458+00:00",
+  "transaction_id": null,
+  "decision_hitl": {
+    "hitl_solicitado": true,
+    "modo_hitl": "siempre",
+    "reglas_detonantes": [
+      "HIGH_AMOUNT",
+      "POSSIBLE_DUPLICATE"
+    ],
+    "razon": "modo_hitl=siempre"
+  },
+  "alertas_hitl": [
+    "HIGH_AMOUNT",
+    "POSSIBLE_DUPLICATE"
+  ],
+  "patrones_sospechosos": [],
+  "motivo_fallo_escaneo": null,
+  "ocr": {
+    "confianza_ocr": 0.92,
+    "llamadas_ocr": 1,
+    "umbral_confianza_ocr": 0.75
+  },
+  "tokens_entrada": 5330,
+  "tokens_salida": 213
+}
