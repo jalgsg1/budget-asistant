@@ -1,0 +1,400 @@
+{
+  "pbtResults": {
+    "1.2 Write property test for round trip fila-modelo": {
+      "status": "passed",
+      "lastRunTimestamp": 1794980698879
+    },
+    "4.4 Write property test for partición de campos": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981003850
+    },
+    "4.5 Write property test for categoría fuera de la lista cerrada": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981170806
+    },
+    "4.6 Write property test for forma de la respuesta": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981175973
+    },
+    "4.10 Write property test for advertencia de baja confianza": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981238687
+    },
+    "4.8 Write property test for campo obligatorio faltante": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981239170
+    },
+    "4.12 Write property test for respuesta de fallo uniforme": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981244274
+    },
+    "4.11 Write property test for advertencia de contenido sospechoso": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981307275
+    },
+    "4.13 Write property test for archivos temporales residuales": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981352194
+    },
+    "4.14 Write property test for análisis sin efectos secundarios": {
+      "status": "passed",
+      "lastRunTimestamp": 1794981362347
+    }
+  },
+  "executionHistory": {
+    "1.1 Implementar el dataclass `Transaction`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980449831
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980456981
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980533278
+      }
+    ],
+    "2.1 Agregar el esquema `AnalisisFacturaRespuesta`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980449982
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980457129
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980533380
+      }
+    ],
+    "2.2 Extraer `_validar_archivo` de `ocr_subida`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450098
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980457216
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980533981
+      }
+    ],
+    "2.3 Implementar las funciones de apoyo": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450220
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980536821
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980583914
+      }
+    ],
+    "2.4 Implementar `ServiciosNegocio.analizar_subida`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450304
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980803384
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980862197
+      }
+    ],
+    "3. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450403
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981560380
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981840443
+      }
+    ],
+    "4.1 Crear `api_pruebas/rutas/facturas.py`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450494
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980866185
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980893338
+      }
+    ],
+    "4.2 Registrar la ruta nueva y eliminar `POST /validar`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450595
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980896411
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980943431
+      }
+    ],
+    "4.3 Actualizar referencias residuales": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450721
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980948404
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981185943
+      }
+    ],
+    "5. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980450837
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981840785
+      }
+    ],
+    "1. Crear el paquete `Backend/model`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980533548
+      }
+    ],
+    "1.2 Write property test for round trip fila-modelo": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980665062
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980799238
+      }
+    ],
+    "1.3 Write unit tests for Transaction": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980665662
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980799893
+      }
+    ],
+    "2. Implementar el análisis en `ServiciosNegocio`": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980862620
+      }
+    ],
+    "4.4 Write property test for partición de campos": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980948504
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981186018
+      }
+    ],
+    "4.5 Write property test for categoría fuera de la lista cerrada": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980949237
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981189510
+      }
+    ],
+    "4.6 Write property test for forma de la respuesta": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980950031
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981189880
+      }
+    ],
+    "4.7 Write property test for validación contra evaluar_factura": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794980950843
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981190011
+      }
+    ],
+    "4. Exponer la ruta, eliminar `/validar` y probar": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981186116
+      }
+    ],
+    "4.8 Write property test for campo obligatorio faltante": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981194656
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981314758
+      }
+    ],
+    "4.9 Write property test for redacción de secretos": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981195027
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981315525
+      }
+    ],
+    "4.10 Write property test for advertencia de baja confianza": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981195301
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981316110
+      }
+    ],
+    "4.11 Write property test for advertencia de contenido sospechoso": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981195635
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981317133
+      }
+    ],
+    "4.12 Write property test for respuesta de fallo uniforme": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981196382
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981317969
+      }
+    ],
+    "4.13 Write property test for archivos temporales residuales": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981318709
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981555270
+      }
+    ],
+    "4.14 Write property test for análisis sin efectos secundarios": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981319551
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981556071
+      }
+    ],
+    "4.15 Write example and smoke tests for the endpoint": [
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981320294
+      },
+      {
+        "executionId": "cc9ef863-8401-40b8-adfc-bde8d22b49f0",
+        "chatSessionId": "sess_16a614ee-3f2e-46c1-86c8-c023ca346ded",
+        "timestamp": 1794981556716
+      }
+    ]
+  }
+}

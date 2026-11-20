@@ -11,7 +11,6 @@ Reglas implementadas
 R1  validar_campos_obligatorios  — comercio, fecha, total, moneda, categoría
 R2  validar_fecha                — formato ISO 8601 y no en el futuro
 R3  validar_moneda               — solo CRC o USD
-R4  validar_aritmetica           — |subtotal + iva - total| <= 0.01
 R6  validar_categoria            — valor en CLOSED_CATEGORY_LIST
 R7  validar_monto_alto           — token requerido cuando total > umbral
 R8  validar_token_confirmacion   — token no nulo y no vacío
@@ -174,46 +173,6 @@ def validar_moneda(moneda: str) -> ValidationResult:
                 f"Monedas aceptadas: {', '.join(sorted(_MONEDAS_VALIDAS))}."
             ],
             error_code="INVALID_CURRENCY",
-        )
-
-    return ValidationResult(is_valid=True)
-
-
-# ---------------------------------------------------------------------------
-# R4 — Coherencia aritmética
-# ---------------------------------------------------------------------------
-
-def validar_aritmetica(subtotal: float, iva: float, total: float) -> ValidationResult:
-    """R4: verifica que |subtotal + iva - total| <= 0.01 cuando ambos están presentes.
-
-    Parameters
-    ----------
-    subtotal:
-        Monto antes de impuestos.
-    iva:
-        Monto del impuesto.
-    total:
-        Monto final pagado.
-
-    Returns
-    -------
-    ValidationResult
-        ``is_valid=True`` si la diferencia está dentro de la tolerancia de ±0.01.
-        ``error_code="ARITHMETIC_INCONSISTENCY"`` en caso contrario.
-    """
-    # Redondear a 2 decimales evita falsos rechazos por error de punto flotante
-    # (p. ej. 100.0 + 13.0 - 113.01 = 0.01000000000000512).
-    diferencia: float = round(abs(subtotal + iva - total), 2)
-
-    if diferencia > 0.01:
-        return ValidationResult(
-            is_valid=False,
-            errors=[
-                f"Inconsistencia aritmética: subtotal ({subtotal}) + IVA ({iva}) = "
-                f"{subtotal + iva:.4f}, pero el total es {total}. "
-                f"Diferencia: {diferencia:.4f} (máximo permitido: 0.01)."
-            ],
-            error_code="ARITHMETIC_INCONSISTENCY",
         )
 
     return ValidationResult(is_valid=True)

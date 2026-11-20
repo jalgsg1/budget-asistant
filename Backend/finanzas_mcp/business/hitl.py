@@ -83,7 +83,6 @@ def es_token_automatico(token: object) -> bool:
 
 def decidir_rechazo_automatico(
     monto_alto: bool,
-    aritmetica_invalida: bool,
     duplicado: bool,
     confianza_baja_o_ausente: bool,
     contenido_sospechoso_o_ausente: bool,
@@ -95,8 +94,7 @@ def decidir_rechazo_automatico(
     if monto_alto:
         return CODIGO_MONTO_ALTO
     if (
-        aritmetica_invalida
-        or duplicado
+        duplicado
         or confianza_baja_o_ausente
         or contenido_sospechoso_o_ausente
     ):

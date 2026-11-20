@@ -105,19 +105,6 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("Alimentación", io.prompts[0])
         self.assertEqual(t.calls[1][1]["categoria"], "Alimentación")
 
-    def test_arithmetic_inconsistency_asks_and_revalidates(self):
-        data = dict(GOOD, subtotal=80.0, iva=10.0)
-
-        def validar(a):
-            if abs(a["subtotal"] + a["iva"] - a["total"]) > 0.01:
-                raise ToolError("ARITHMETIC_INCONSISTENCY", "x")
-            return {"is_valid": True}
-        t = Tools([ocr(data)], validar)
-        res, _ = run(t, ["iva", "20", "tok"])
-        self.assertEqual(res.status, "success")
-        self.assertEqual(t.names().count("validar_factura"), 2)
-        self.assertEqual(res.datos["iva"], 20.0)
-
     def test_duplicates_require_explicit_confirmation(self):
         dup = [dict(GOOD, id=1)]
         t = Tools([ocr(GOOD)], dups=dup)

@@ -6,8 +6,8 @@ Contiene:
 
 * Carga de ``politica.json`` y contadores de límites (Tarea 10.1; el archivo
   no existía en disco al ejecutar la 10.2, por lo que se incluye aquí).
-* El pipeline SKILL de seis pasos (Tarea 10.2):
-  Extraer -> Validar -> Aritmética -> Duplicados -> Confirmar -> Registrar.
+* El pipeline SKILL de cinco pasos (Tarea 10.2):
+  Extraer -> Validar -> Duplicados -> Confirmar -> Registrar.
 
 Diseño para pruebas
 -------------------
@@ -254,7 +254,7 @@ def _now() -> str:
 
 
 class InvoicePipeline:
-    """Ejecuta los seis pasos del SKILL para una imagen de factura."""
+    """Ejecuta los cinco pasos del SKILL para una imagen de factura."""
 
     def __init__(
         self,
@@ -309,7 +309,7 @@ class InvoicePipeline:
         try:
             datos = self._step1_extraer(image_path)
             self._etapa = "validar"
-            self._step2_3_validar(datos)
+            self._step2_validar(datos)
             self._etapa = "duplicados"
             self._step4_duplicados(datos)
             self._etapa = "confirmar"
@@ -428,7 +428,7 @@ class InvoicePipeline:
             ]
             for f in low:
                 self._clarify(datos, f)
-        self._datos_extraidos = dict(datos)  # D5: antes de los pasos 2 y 3
+        self._datos_extraidos = dict(datos)  # D5: antes del paso 2
         return datos
 
     def _set_ocr_block(self, ocr: dict) -> None:
@@ -564,9 +564,9 @@ class InvoicePipeline:
             "transaction_id": self._trace.transaction_id,
         }
 
-    # -- Pasos 2 y 3: Validar / Aritmética -----------------------------------
+    # -- Paso 2: Validar -----------------------------------
 
-    def _step2_3_validar(self, datos: dict) -> None:
+    def _step2_validar(self, datos: dict) -> None:
         while True:
             if datos.get("categoria") not in CLOSED_CATEGORY_LIST:
                 self._select_category(datos)  # R6: antes de validar_factura
@@ -593,8 +593,6 @@ class InvoicePipeline:
             self._aplicar_defecto(datos, "fecha")
         elif code == "INVALID_CATEGORY":
             self._select_category(datos)
-        elif code == "ARITHMETIC_INCONSISTENCY":
-            self._fix_arithmetic(datos)
         else:
             raise _Stop(RAZON_FALLO_VALIDACION, f"Validación fallida: {err.message or code}")
 
@@ -619,23 +617,6 @@ class InvoicePipeline:
         if chosen is None:
             raise _Stop(RAZON_FALLO_VALIDACION, "No se seleccionó una categoría válida.")
         self._corregir(datos, "categoria", chosen)
-
-    def _fix_arithmetic(self, datos: dict) -> None:
-        # subtotal -> 0 por defecto; sin subtotal e iva juntos el servidor no evalúa la aritmética.
-        self._aplicar_defecto(datos, "subtotal")
-        datos["iva"] = None
-
-    def _fix_arithmetic_manual(self, datos: dict) -> None:
-        ans = self._ask(
-            f"Incoherencia: subtotal={datos.get('subtotal')} + iva={datos.get('iva')} "
-            f"!= total={datos.get('total')}. ¿Qué campo es incorrecto y debe corregirse "
-            f"(subtotal/iva/total)? ",
-            "arithmetic_choice",
-        )
-        target = ans.lower() if ans else None
-        if target not in ("subtotal", "iva", "total"):
-            raise _Stop(RAZON_FALLO_VALIDACION, "No se aclaró la incoherencia aritmética.")
-        self._ask_field(datos, target, "Valor correcto para")
 
     # -- Paso 4: Duplicados --------------------------------------------------
 
@@ -668,7 +649,6 @@ class InvoicePipeline:
         ocr = self._ocr_sel or {"confianza": None, "campos": {}, "low": []}
         umbral = self._policy.umbral_confianza_ocr
         legado = not ocr["campos"] and ocr["confianza"] is not None and _es_bajo(ocr, umbral)
-        ext = self._datos_extraidos
         entrada = EntradaAlertas(
             confianza_global=ocr["confianza"],
             confianza_campos=dict(ocr["campos"]),
@@ -677,9 +657,6 @@ class InvoicePipeline:
             total=datos.get("total"),
             moneda=datos.get("moneda"),
             umbrales_monto=dict(self._policy.high_amount_threshold),
-            subtotal_extraido=ext.get("subtotal"),
-            iva_extraido=ext.get("iva"),
-            total_extraido=ext.get("total"),
             n_duplicados=self._n_duplicados,
             contenido_sospechoso=self._escaneo.sospechoso,
         )

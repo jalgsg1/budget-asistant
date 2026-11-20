@@ -9,6 +9,9 @@ abre su propio ``TransactionRepository`` (``with``). Nunca importa ``mcp``.
 from __future__ import annotations
 
 import json
+import logging
+import os
+import tempfile
 import threading
 import unicodedata
 import uuid
@@ -17,7 +20,14 @@ from typing import Any, Callable, Iterable
 
 from api_pruebas.config import Config
 from api_pruebas.errores import ErrorApi, error_api, redactar
-from api_pruebas.esquemas import OcrRespuesta
+from agent.contenido_sospechoso import escanear
+from api_pruebas.esquemas import (
+    AnalisisFacturaRespuesta,
+    OcrRespuesta,
+    ReglaResultado,
+    ValidacionRespuesta,
+)
+from finanzas_mcp.constantes import CAMPOS_OBLIGATORIOS as _CAMPOS_OBLIGATORIOS_MCP
 from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
 from finanzas_mcp.business.duplicados import buscar_duplicados as _buscar_duplicados
 from finanzas_mcp.business.factura import ResultadoFactura, evaluar_factura
@@ -35,6 +45,8 @@ from ocr_mcp.ocr_core import (
 )
 
 ExtractorOcr = Callable[[str], OcrResult]
+
+_log = logging.getLogger(__name__)
 
 _FIRMAS: dict[str, tuple[bytes, ...]] = {
     ".jpg": (b"\xff\xd8\xff",),
@@ -79,6 +91,99 @@ def _categoria_canonica(categoria: Any) -> Any:
         if _sin_acentos(oficial) == clave:
             return oficial
     return categoria
+
+
+CAMPOS_FACTURA: tuple[str, ...] = (
+    "comercio",
+    "fecha",
+    "total",
+    "moneda",
+    "categoria",
+    "subtotal",
+    "iva",
+    "descripcion",
+)
+CAMPOS_OBLIGATORIOS: tuple[str, ...] = _CAMPOS_OBLIGATORIOS_MCP
+
+
+def _vacio(valor: Any) -> bool:
+    return valor is None or (isinstance(valor, str) and not valor.strip())
+
+
+def _repartir_campos(payload: dict) -> tuple[dict, list[str]]:
+    """Reparte los Campos_Factura en ``campos`` y ``campos_no_identificados``.
+
+    Respeta el orden de ``CAMPOS_FACTURA``, ignora claves ajenas, trata las cadenas en
+    blanco como vacías y canonicaliza ``categoria`` contra ``CLOSED_CATEGORY_LIST``
+    (si no pertenece, queda como no identificada).
+    """
+    payload = payload if isinstance(payload, dict) else {}
+    campos: dict = {}
+    no_identificados: list[str] = []
+    for nombre in CAMPOS_FACTURA:
+        valor = payload.get(nombre)
+        if _vacio(valor):
+            no_identificados.append(nombre)
+            continue
+        if nombre == "categoria":
+            canonica = _categoria_canonica(valor)
+            if canonica not in CLOSED_CATEGORY_LIST:
+                no_identificados.append(nombre)
+                continue
+            valor = canonica
+        campos[nombre] = valor
+    return campos, no_identificados
+
+
+def _reglas_validacion(campos: dict, no_identificados: list[str]) -> ValidacionRespuesta:
+    """Aplica ``evaluar_factura`` y refuerza R1 si falta un Campo_Obligatorio.
+
+    ``evaluar_factura`` rellena ``fecha`` con la fecha de hoy si falta, por lo que R1
+    podría pasar; aquí se agrega R1 fallida cuando hay obligatorios sin identificar.
+    """
+    resultado = evaluar_factura(dict(campos))
+    reglas = [
+        ReglaResultado(
+            regla=r.regla,
+            valid=False,
+            code=r.code,
+            message=redactar(r.message),
+        )
+        for r in resultado.reglas
+    ]
+    faltantes = [c for c in CAMPOS_OBLIGATORIOS if c in no_identificados]
+    if faltantes and not any(r.regla == "R1" for r in reglas):
+        reglas.append(
+            ReglaResultado(
+                regla="R1",
+                valid=False,
+                code="MISSING_FIELDS",
+                message=redactar(
+                    "Campos obligatorios ausentes o vacíos: " + ", ".join(faltantes)
+                ),
+            )
+        )
+    return ValidacionRespuesta(valid=not reglas, reglas=reglas)
+
+
+def _advertencias(ocr: OcrResult | None, umbral: float) -> list[str]:
+    """Advertencias de baja confianza y de contenido sospechoso (texto redactado)."""
+    if ocr is None:
+        return []
+    avisos: list[str] = []
+    confianza = getattr(ocr, "confianza_ocr", None)
+    if confianza is None:
+        confianza = getattr(ocr, "confidence", None)
+    if isinstance(confianza, (int, float)) and not isinstance(confianza, bool):
+        if confianza < umbral:
+            avisos.append(redactar(f"Confianza OCR baja ({confianza} < {umbral})."))
+    if escanear(getattr(ocr, "text", None)).sospechoso:
+        avisos.append(
+            redactar(
+                "Se detectó contenido sospechoso en la imagen; se trató solo como dato."
+            )
+        )
+    return avisos
 
 
 def _item_a_dict(item: Any) -> dict:
@@ -154,8 +259,11 @@ class ServiciosNegocio:
             ruta=self._nombre_publico(resuelta),
         )
 
-    def ocr_subida(self, nombre: str, contenido: bytes) -> tuple[Path, OcrRespuesta]:
-        """Valida extensión (415), firma (415) y tamaño (413) antes de escribir nada."""
+    def _validar_archivo(self, nombre: str, contenido: bytes) -> str:
+        """Valida extensión (415), firma (415) y tamaño (413).
+
+        Devuelve la extensión en minúsculas o lanza ``ErrorApi``.
+        """
         ext = Path(nombre or "").suffix.lower()
         if ext not in ALLOWED_EXTENSIONS:
             raise error_api(
@@ -171,11 +279,76 @@ class ServiciosNegocio:
                 "FILE_TOO_LARGE",
                 f"El archivo excede el tamaño máximo de {self.config.max_upload_bytes} bytes.",
             )
+        return ext
+
+    def ocr_subida(self, nombre: str, contenido: bytes) -> tuple[Path, OcrRespuesta]:
+        """Valida el archivo (415/413) antes de escribir nada y ejecuta el OCR."""
+        ext = self._validar_archivo(nombre, contenido)
         destino_dir = self.config.invoices_dir
         destino_dir.mkdir(parents=True, exist_ok=True)
         destino = destino_dir / f"{uuid.uuid4()}{ext}"
         destino.write_bytes(contenido)
         return destino, self.ocr_ruta(destino.name)
+
+    def _analisis(
+        self, campos: dict, no_identificados: list[str], advertencias: list[str]
+    ) -> AnalisisFacturaRespuesta:
+        return AnalisisFacturaRespuesta(
+            campos=campos,
+            campos_no_identificados=no_identificados,
+            validacion=_reglas_validacion(campos, no_identificados),
+            advertencias=[redactar(a) for a in advertencias],
+        )
+
+    def _analisis_fallo(self, mensaje: str) -> AnalisisFacturaRespuesta:
+        campos, no_identificados = _repartir_campos({})
+        return self._analisis(campos, no_identificados, [mensaje])
+
+    def analizar_subida(self, nombre: str, contenido: bytes) -> AnalisisFacturaRespuesta:
+        """Analiza una factura sin persistir nada (ni base, ni trazas, ni INVOICES_DIR).
+
+        Los fallos se devuelven dentro de la respuesta (HTTP 200).
+        """
+        try:
+            ext = self._validar_archivo(nombre, contenido)
+        except ErrorApi as exc:
+            return self._analisis_fallo(redactar(str(exc.message)))
+
+        ocr: OcrResult | None = None
+        payload: Any = None
+        fallo: str | None = None
+        fd, ruta_tmp = tempfile.mkstemp(suffix=ext)
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(contenido)
+            try:
+                ocr = self._get_extractor()(ruta_tmp)
+            except OcrToolError as exc:
+                fallo = redactar(str(getattr(exc, "message", None) or exc))
+            except Exception as exc:  # noqa: BLE001 - solo se expone el tipo
+                fallo = redactar(f"Fallo en la extracción OCR ({type(exc).__name__}).")
+        finally:
+            try:
+                os.remove(ruta_tmp)
+            except FileNotFoundError:
+                pass
+            except OSError:
+                _log.warning("No se pudo borrar el archivo temporal del análisis.")
+
+        if fallo is None:
+            try:
+                payload = json.loads(ocr.text)
+            except (TypeError, ValueError) as exc:
+                fallo = redactar(f"Fallo en la extracción OCR ({type(exc).__name__}).")
+            else:
+                if not isinstance(payload, dict):
+                    fallo = redactar("Fallo en la extracción OCR (TypeError).")
+        if fallo is not None:
+            return self._analisis_fallo(fallo)
+
+        campos, no_identificados = _repartir_campos(payload)
+        umbral = self.config.policy.umbral_confianza_ocr
+        return self._analisis(campos, no_identificados, _advertencias(ocr, umbral))
 
     # ------------------------------------------------------------------
     def reset(self) -> int:

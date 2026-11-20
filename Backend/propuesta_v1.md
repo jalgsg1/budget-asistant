@@ -9,7 +9,7 @@ Una persona que paga con tarjeta o efectivo y acumula tiquetes y facturas que in
 
 ## 2. Por qué un agente
 
-Lectura y nivel de condianza de cada factura. Esto no se puede fijar de antemano. Si un campo sale con baja confianza, el agente decide si reintentar o preguntar al usuario; si subtotal + impuestos ≠ total, decide qué valor es el correcto o si debe pedir confirmación; si hay un posible duplicado, decide consultar antes de guardar; si la categoría es ambigua, propone opciones; y si la imagen contiene texto con instrucciones, debe tratarlo como dato y no obedecerlo. Una factura limpia se resuelve en 3 pasos; una borrosa, duplicada o maliciosa necesita otros, en otro orden.
+Lectura y nivel de condianza de cada factura. Esto no se puede fijar de antemano. Si un campo sale con baja confianza, el agente decide si reintentar o preguntar al usuario; si hay un posible duplicado, decide consultar antes de guardar; si la categoría es ambigua, propone opciones; y si la imagen contiene texto con instrucciones, debe tratarlo como dato y no obedecerlo. Una factura limpia se resuelve en 3 pasos; una borrosa, duplicada o maliciosa necesita otros, en otro orden.
 
 ## 3. Datos
 
@@ -39,7 +39,7 @@ Las facturas serían propias o del dataset, que dan su consentimiento. CORD (CC 
 |---|---|---|---|
 | `ocr-mcp` | `ocr_imagen(ruta)` | Lee | Ruta solo dentro de la carpeta de facturas, tipo y tamaño de imagen; devuelve el texto envuelto como *contenido no confiable*. |
 
-| `finanzas-mcp` (propio) | `validar_factura(datos)` | Lee | Esquema de campos obligatorios, fecha válida y no futura, moneda ISO 4217 (CRC/USD), coherencia subtotal + IVA = total. |
+| `finanzas-mcp` (propio) | `validar_factura(datos)` | Lee | Esquema de campos obligatorios, fecha válida y no futura, moneda ISO 4217 (CRC/USD). |
 
 | `finanzas-mcp` (propio) | `buscar_duplicados(comercio, fecha, total)` | Lee | Solo consulta la cuenta del usuario activo; máximo 10 resultados (impide "devuelve todas las facturas"). |
 
@@ -54,7 +54,7 @@ Las facturas serían propias o del dataset, que dan su consentimiento. CORD (CC 
 
 ## 5. Pregunta de investigación
 
-**Nuestra pregunta:** ¿Mejora una Skill procedimental (extraer → validar campos obligatorios → verificar aritmética → detectar duplicados → confirmar → registrar) con validación en el servidor MCP la exactitud del registro de facturas y la resistencia a inyecciones indirectas, frente a OCR + LLM con un solo prompt?
+**Nuestra pregunta:** ¿Mejora una Skill procedimental (extraer → validar campos obligatorios → detectar duplicados → confirmar → registrar) con validación en el servidor MCP la exactitud del registro de facturas y la resistencia a inyecciones indirectas, frente a OCR + LLM con un solo prompt?
 
 **Condición B contra la que comparamos:** el mismo OCR y el mismo LLM con un prompt único que devuelve el JSON de la factura y lo guarda directamente, sin Skill ni herramientas de validación. Ambas condiciones se ejecutan sobre las mismas 45 facturas, con trazas de cada ejecución. Sin dejar de lado el costo en tokens y tiempo.
 

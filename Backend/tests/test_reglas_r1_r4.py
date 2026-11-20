@@ -9,7 +9,6 @@ import unittest
 from datetime import date, timedelta
 
 from finanzas_mcp.business.validacion import (
-    validar_aritmetica,
     validar_campos_obligatorios,
     validar_fecha,
     validar_moneda,
@@ -92,25 +91,6 @@ class TestR3Moneda(unittest.TestCase):
         r = validar_moneda("")
         self.assertFalse(r.is_valid)
         self.assertEqual(r.error_code, "INVALID_CURRENCY")
-
-
-class TestR4Aritmetica(unittest.TestCase):
-    def test_conforme_suma_exacta(self):
-        self.assertTrue(validar_aritmetica(100.0, 13.0, 113.0).is_valid)
-
-    def test_conforme_dentro_de_tolerancia(self):
-        self.assertTrue(validar_aritmetica(100.0, 13.0, 113.005).is_valid)
-        self.assertTrue(validar_aritmetica(100.0, 13.0, 112.995).is_valid)
-
-    def test_no_conforme_fuera_de_tolerancia(self):
-        r = validar_aritmetica(100.0, 13.0, 120.0)
-        self.assertFalse(r.is_valid)
-        self.assertEqual(r.error_code, "ARITHMETIC_INCONSISTENCY")
-
-    def test_no_conforme_justo_sobre_tolerancia(self):
-        r = validar_aritmetica(100.0, 13.0, 113.05)
-        self.assertFalse(r.is_valid)
-        self.assertEqual(r.error_code, "ARITHMETIC_INCONSISTENCY")
 
 
 if __name__ == "__main__":

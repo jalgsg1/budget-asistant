@@ -66,7 +66,6 @@ from finanzas_mcp.business.transacciones import (
     registrar_transaccion as _registrar_transaccion,
 )
 from finanzas_mcp.business.validacion import (
-    validar_aritmetica,
     validar_campos_obligatorios,
     validar_categoria,
     validar_fecha,
@@ -204,7 +203,6 @@ async def handle_list_tools() -> list[types.Tool]:
             description=(
                 "Valida los campos de una factura: campos obligatorios (R1), "
                 "formato y no-futuro de fecha (R2), moneda CRC/USD (R3), "
-                "coherencia aritmética subtotal+IVA=total ±0.01 (R4), "
                 "categoría en lista cerrada (R6)."
             ),
             inputSchema={

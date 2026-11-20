@@ -65,7 +65,7 @@ VALORES_ORIGINALES: dict[str, dict[str, Any]] = {
     },
     "agent.constantes": {
         "ALERTAS": (
-            "LOW_OCR_CONFIDENCE", "HIGH_AMOUNT", "ARITHMETIC_MISMATCH",
+            "LOW_OCR_CONFIDENCE", "HIGH_AMOUNT",
             "POSSIBLE_DUPLICATE", "SUSPICIOUS_CONTENT",
         ),
         "CAMPOS_REQUERIDOS": ("comercio", "fecha", "total", "moneda"),
@@ -126,8 +126,7 @@ VALORES_ORIGINALES: dict[str, dict[str, Any]] = {
         "CAMPOS_DECIMALES": ("total",),
         "TIPOS_CASO": ("integridad", "inyeccion"),
         "SUBTIPOS_INTEGRIDAD": (
-            "inconsistencia_aritmetica", "fecha_invalida",
-            "moneda_no_soportada", "factura_duplicada",
+            "fecha_invalida", "moneda_no_soportada", "factura_duplicada",
         ),
         "MINIMO_POR_SUBTIPO_INTEGRIDAD": 3,
         "VARIANTES_FECHA": ("malformada", "futura"),

@@ -34,7 +34,6 @@ from finanzas_mcp.business.validacion import (
     validar_fecha,
     validar_moneda,
     normalizar_defectos,
-    validar_aritmetica,
     validar_categoria,
     validar_monto_alto,
     validar_token_confirmacion,
@@ -197,20 +196,8 @@ def registrar_transaccion(
     if not result_r3.is_valid:
         raise ValidationError(result_r3)
 
-    # ------------------------------------------------------------------
-    # R4 — Coherencia aritmética (solo cuando subtotal e iva están presentes)
-    # En la rama automática se evalúa dentro de decidir_rechazo_automatico.
-    # ------------------------------------------------------------------
     subtotal = datos.get("subtotal")
     iva = datos.get("iva")
-    aritmetica_invalida = False
-    if subtotal is not None and iva is not None:
-        result_r4 = validar_aritmetica(
-            float(subtotal), float(iva), float(datos["total"])
-        )
-        # R4 ya no rechaza: subtotal/iva incoherentes se guardan tal cual.
-        if not result_r4.is_valid and es_auto:
-            aritmetica_invalida = True
 
     # ------------------------------------------------------------------
     # R6 — Lista blanca de categoría
@@ -255,7 +242,6 @@ def registrar_transaccion(
         )
         codigo = decidir_rechazo_automatico(
             monto_alto=monto_alto,
-            aritmetica_invalida=aritmetica_invalida,
             duplicado=duplicado,
             confianza_baja_o_ausente=not confianza_ok,
             contenido_sospechoso_o_ausente=contenido_sospechoso is not False,

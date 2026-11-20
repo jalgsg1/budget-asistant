@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Aplicación FastAPI de la API_Pruebas.
 
 ``app`` se crea sin leer la configuración: ésta se carga en el ``lifespan``,
@@ -15,7 +15,7 @@ from fastapi import FastAPI
 
 from api_pruebas import errores
 from api_pruebas.config import Config, cargar_config
-from api_pruebas.rutas import batch, factura, ocr, pipeline, transacciones, trazas
+from api_pruebas.rutas import batch, facturas, ocr, pipeline, transacciones, trazas
 from api_pruebas.servicios import ExtractorOcr, ServiciosNegocio
 
 logger = logging.getLogger("api_pruebas")
@@ -67,7 +67,7 @@ def crear_app(
         lifespan=lifespan,
     )
     errores.registrar_handlers(app)
-    for modulo in (ocr, factura, transacciones, pipeline, batch, trazas):
+    for modulo in (ocr, facturas, transacciones, pipeline, batch, trazas):
         app.include_router(modulo.router)
 
     if config is not None:

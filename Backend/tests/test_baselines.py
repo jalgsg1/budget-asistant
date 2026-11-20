@@ -359,7 +359,7 @@ class TestBaselinePromptGuarded(_EjemplosBaseline, _BaseBaselines):
     prompt = baseline_prompt_guarded.SYSTEM_PROMPT_GUARDED
 
     def test_prompt_guarded_incluye_defensas(self):
-        for fragmento in ("DATOS", "R4", "R2", "R3", "R5"):
+        for fragmento in ("DATOS", "R2", "R3", "R5"):
             self.assertIn(fragmento, self.prompt)
         self.assertNotEqual(self.prompt, baseline_naive.SYSTEM_PROMPT_NAIVE)
 

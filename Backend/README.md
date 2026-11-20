@@ -9,7 +9,7 @@ Proyecto de la maestría MISIA (Cenfotec), curso IA distribuida.
 El agente ejecuta un pipeline de seis pasos por factura:
 
 1. Extracción de texto con OCR basado en un LLM con visión (OpenAI GPT-4o o Anthropic Claude, configurable).
-2. Validación de campos obligatorios, fecha, moneda y coherencia aritmética.
+2. Validación de campos obligatorios, fecha y moneda.
 3. Validación de la categoría contra una lista cerrada.
 4. Detección de duplicados.
 5. Confirmación explícita del usuario (con confirmación adicional para montos altos).
@@ -107,7 +107,6 @@ OPENAI_API_KEY=tu-clave
 MCP_USER_ID=usuario_prueba
 SQLITE_JOURNAL_MODE=DELETE
 ```
-
 Si el `.env` tiene sintaxis de PowerShell, Compose falla con `unexpected character "$" in variable name`.
 
 
@@ -116,7 +115,7 @@ Si el `.env` tiene sintaxis de PowerShell, Compose falla con `unexpected charact
 | Método y ruta | Función |
 |---|---|
 | `POST /ocr` | Extrae datos de una imagen subida. El resultado se marca como contenido no confiable. |
-| `POST /validar` | Valida los datos de una factura. |
+| `POST /facturas/analizar` | Recibe una imagen de factura (multipart, parte `archivo`), ejecuta el OCR y las reglas de validación. Devuelve `campos`, `campos_no_identificados`, `validacion` y `advertencias`. No guarda transacciones ni trazas. |
 | `GET /transacciones` | Lista las transacciones del usuario. |
 | `POST /pipeline/run` | Ejecuta el pipeline sobre una imagen (`ruta`, `respuestas`). |
 | `POST /batch/run` | Procesa todas las imágenes de una subcarpeta de `INVOICES_DIR`. |
@@ -127,7 +126,7 @@ Si el `.env` tiene sintaxis de PowerShell, Compose falla con `unexpected charact
 | `POST /test/reset` | Elimina las transacciones del usuario. Solo modo de pruebas. |
 | `POST /test/seed` | Inserta transacciones de prueba. Solo modo de pruebas. |
 
-No existen `/health`, `/config`, `/duplicados` ni `POST /transacciones`. Los endpoints `/test/*` responden 403 si `API_TEST_MODE` no es `true` (`TEST_MODE_DISABLED`) o si la base no está permitida (`TEST_DB_NOT_ALLOWED`).
+No existen `/health`, `/config`, `/duplicados`, `POST /transacciones` ni `POST /validar` (sustituido por `POST /facturas/analizar`). Los endpoints `/test/*` responden 403 si `API_TEST_MODE` no es `true` (`TEST_MODE_DISABLED`) o si la base no está permitida (`TEST_DB_NOT_ALLOWED`).
 
 
 ### Alternativa: ejecución manual

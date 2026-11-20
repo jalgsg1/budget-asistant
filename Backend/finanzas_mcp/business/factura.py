@@ -1,5 +1,5 @@
 """
-finanzas_mcp/business/factura.py — Evaluación agregada de una factura (R1, R2, R3, R4, R6).
+finanzas_mcp/business/factura.py — Evaluación agregada de una factura (R1, R2, R3, R6).
 
 Sin dependencia de `mcp`. Aplica las reglas en el mismo orden y con las mismas
 condiciones que el handler `validar_factura` del servidor MCP.
@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from finanzas_mcp.business.categorias import CLOSED_CATEGORY_LIST
 from finanzas_mcp.business.validacion import (
     normalizar_defectos,
-    validar_aritmetica,
     validar_campos_obligatorios,
     validar_categoria,
     validar_fecha,
@@ -54,7 +53,7 @@ class ResultadoFactura:
 
 
 def evaluar_factura(datos: dict) -> ResultadoFactura:
-    """Evalúa R1, R2, R3, R4 y R6 y devuelve todas las reglas fallidas."""
+    """Evalúa R1, R2, R3 y R6 y devuelve todas las reglas fallidas."""
     reglas: list[ReglaFallida] = []
     datos = normalizar_defectos(datos)
 
@@ -75,8 +74,6 @@ def evaluar_factura(datos: dict) -> ResultadoFactura:
     moneda = datos.get("moneda")
     if moneda is not None:
         _anotar("R3", validar_moneda(str(moneda)))
-
-    # R4 — Coherencia aritmética: deshabilitada (subtotal/iva no bloquean el registro).
 
     # R6 — Categoría
     categoria = datos.get("categoria")

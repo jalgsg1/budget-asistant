@@ -202,11 +202,6 @@ class PipelineHitlExamples(SinRedTestCase):
         self._afirma_alerta("HIGH_AMOUNT", res, io, reg)
         self.assertEqual(reg[0]["high_amount_token"], "hi")
 
-    def test_alerta_arithmetic_mismatch(self):
-        data = {"subtotal": 100.0, "iva": 13.0, "total": 120.0}
-        res, io, reg, _f, _c = _correr([_ocr_ex(0.99, data)], ["tok"])
-        self._afirma_alerta("ARITHMETIC_MISMATCH", res, io, reg)
-
     def test_alerta_possible_duplicate(self):
         res, io, reg, _f, _c = _correr([_ocr_ex(0.99)], ["tok"], duplicados=[DUPLICADO])
         self._afirma_alerta("POSSIBLE_DUPLICATE", res, io, reg)

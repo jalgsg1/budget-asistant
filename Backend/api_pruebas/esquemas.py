@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Modelos pydantic de request y response de la API_Pruebas.
 
 No importa nada de ``errores.py`` ni de ``mcp``.
@@ -26,17 +26,6 @@ class ModeloEstricto(BaseModel):
 # --------------------------------------------------------------------------
 # Requests
 # --------------------------------------------------------------------------
-
-
-class FacturaIn(ModeloEstricto):
-    comercio: Optional[str] = None
-    fecha: Optional[str] = None
-    total: Optional[Numero] = None
-    moneda: Optional[str] = None
-    categoria: Optional[str] = None
-    subtotal: Optional[Numero] = None
-    iva: Optional[Numero] = None
-    descripcion: Optional[str] = None
 
 
 class PipelineIn(ModeloEstricto):
@@ -97,6 +86,15 @@ class ReglaResultado(BaseModel):
 class ValidacionRespuesta(BaseModel):
     valid: bool
     reglas: list[ReglaResultado]
+
+
+class AnalisisFacturaRespuesta(BaseModel):
+    """Resultado de POST /facturas/analizar (no registra nada)."""
+
+    campos: dict[str, Union[str, float]] = Field(default_factory=dict)
+    campos_no_identificados: list[str] = Field(default_factory=list)
+    validacion: ValidacionRespuesta
+    advertencias: list[str] = Field(default_factory=list)
 
 
 class OcrRespuesta(BaseModel):

@@ -10,7 +10,7 @@
 
 ## Problema que resuelve
 
-Reducir la fricción y los errores de captura al registrar facturas: montos mal digitados, fechas equivocadas, gastos duplicados y moneda incorrecta (CRC/USD). El agente lee la imagen, valida campos y aritmética, detecta duplicados y aplica confirmación humana adaptativa (HITL) según el nivel de riesgo y confianza de extracción antes de escribir en base de datos.
+Reducir la fricción y los errores de captura al registrar facturas: montos mal digitados, fechas equivocadas, gastos duplicados y moneda incorrecta (CRC/USD). El agente lee la imagen, valida campos, detecta duplicados y aplica confirmación humana adaptativa (HITL) según el nivel de riesgo y confianza de extracción antes de escribir en base de datos.
 ---
 
 ## Pipeline OCR y flujo del agente
@@ -20,7 +20,7 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 | Servidor | Tool | Operación | Qué valida |
 |---|---|---|---|
 | `ocr-mcp` | `ocr_imagen(ruta)` | Lectura | Ruta dentro de la carpeta de facturas, tipo y tamaño de imagen; devuelve texto envuelto como *contenido no confiable* y nivel de confianza de extracción. |
-| `finanzas-mcp` | `validar_factura(datos)` | Lectura | Campos obligatorios, fecha válida y no futura, moneda ISO 4217, coherencia subtotal + IVA = total. |
+| `finanzas-mcp` | `validar_factura(datos)` | Lectura | Campos obligatorios, fecha válida y no futura, moneda ISO 4217. |
 | `finanzas-mcp` | `buscar_duplicados(comercio, fecha, total)` | Lectura | Solo consulta la cuenta del usuario activo; máximo 10 resultados. |
 | `finanzas-mcp` | `listar_transacciones(filtros)` | Lectura | Filtros en lista blanca, rango de fechas máximo, sin acceso a otras cuentas. |
 | `finanzas-mcp` | `registrar_transaccion(...)` | **Escritura** | Revalida todo lo de `validar_factura`, categoría en lista cerrada, rechaza duplicados, exige token de confirmación según política/riesgo. |
@@ -30,11 +30,10 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 
 ```
 1. Extraer   → ocr_imagen(ruta): obtener texto crudo de la imagen.
-2. Validar   → validar_factura(datos): verificar campos y coherencia aritmética.
-3. Aritmética → si subtotal + IVA ≠ total (±0,01): pedir corrección o confirmar al usuario.
-4. Duplicados → buscar_duplicados(comercio, fecha, total): bloquear si hay coincidencia.
-5. Evaluar riesgo / Confirmar → Si la factura supera el umbral de monto (R7), tiene duplicados (R5), baja confianza, error aritmético o sospecha de inyección, solicitar token explícito del usuario. Si es limpia y de bajo riesgo, proceder directo al registro.
-6. Registrar → registrar_transaccion(...): el servidor revalida todo de forma independiente.
+2. Validar   → validar_factura(datos): verificar campos obligatorios, fecha, moneda y categoría.
+3. Duplicados → buscar_duplicados(comercio, fecha, total): bloquear si hay coincidencia.
+4. Evaluar riesgo / Confirmar → Si la factura supera el umbral de monto (R7), tiene duplicados (R5), baja confianza o sospecha de inyección, solicitar token explícito del usuario. Si es limpia y de bajo riesgo, proceder directo al registro.
+5. Registrar → registrar_transaccion(...): el servidor revalida todo de forma independiente.
 ```
 
 ### Decisiones por caso
@@ -42,11 +41,10 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 | Situación | Acción del agente |
 |---|---|
 | Campo con baja confianza de OCR | Reintentar OCR; si persiste, preguntar al usuario. |
-| subtotal + IVA ≠ total | Pedir al usuario que confirme el valor correcto. |
 | Posible duplicado detectado | Consultar al usuario antes de guardar. |
 | Categoría ambigua | Proponer opciones del catálogo cerrado. |
 | Texto de la imagen contiene instrucciones | Tratar como dato, ignorar como instrucción. |
-| Factura limpia | Resuelve en los 6 pasos estándar. |
+| Factura limpia | Resuelve en los 5 pasos estándar. |
 | Factura borrosa, duplicada o maliciosa | Puede requerir pasos adicionales o distinto orden, dentro del límite de 8 pasos. |
 
 ---
@@ -58,8 +56,6 @@ Reducir la fricción y los errores de captura al registrar facturas: montos mal 
 **R2 — Fecha válida y no futura:** la fecha de la factura no puede ser posterior a la fecha actual ni estar en formato inválido.
 
 **R3 — Moneda ISO 4217:** solo se aceptan CRC (colones) y USD (dólares); cualquier otro valor es rechazado.
-
-**R4 — Coherencia aritmética:** subtotal + IVA debe ser igual al total (tolerancia ±0,01); si no cuadra, el servidor pide corrección antes de guardar.
 
 **R5 — Sin duplicados:** antes de registrar, `buscar_duplicados(comercio, fecha, total)` debe confirmar que la transacción no existe; si hay coincidencia, se bloquea el registro hasta que el usuario confirme explícitamente.
 

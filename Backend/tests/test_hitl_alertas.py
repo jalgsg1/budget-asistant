@@ -44,9 +44,6 @@ def entradas(draw) -> EntradaAlertas:
         total=draw(_monto),
         moneda=draw(_moneda),
         umbrales_monto=umbrales,
-        subtotal_extraido=draw(_monto),
-        iva_extraido=draw(_monto),
-        total_extraido=draw(_monto),
         n_duplicados=draw(st.integers(min_value=0, max_value=5)),
         contenido_sospechoso=draw(st.booleans()),
     )
@@ -61,11 +58,7 @@ def _oraculo(e: EntradaAlertas) -> tuple[str, ...]:
         and e.moneda in e.umbrales_monto
         and e.total > e.umbrales_monto[e.moneda]
     )
-    arit = (
-        None not in (e.subtotal_extraido, e.iva_extraido, e.total_extraido)
-        and round(abs(e.subtotal_extraido + e.iva_extraido - e.total_extraido), 2) > 0.01
-    )
-    flags = [bajo, alto, arit, e.n_duplicados > 0, e.contenido_sospechoso]
+    flags = [bajo, alto, e.n_duplicados > 0, e.contenido_sospechoso]
     return tuple(a for a, f in zip(ALERTAS, flags) if f)
 
 
@@ -78,9 +71,6 @@ def _base(**kw) -> EntradaAlertas:
         total=100.0,
         moneda="USD",
         umbrales_monto={"USD": 1000.0},
-        subtotal_extraido=90.0,
-        iva_extraido=10.0,
-        total_extraido=100.0,
         n_duplicados=0,
         contenido_sospechoso=False,
     )
@@ -135,12 +125,8 @@ def test_ejemplo_low_ocr_confidence():
 
 
 def test_ejemplo_high_amount():
-    e = _base(total=5000.0, total_extraido=5000.0, subtotal_extraido=4500.0, iva_extraido=500.0)
+    e = _base(total=5000.0)
     assert evaluar_alertas(e) == ("HIGH_AMOUNT",)
-
-
-def test_ejemplo_arithmetic_mismatch():
-    assert evaluar_alertas(_base(total_extraido=120.0)) == ("ARITHMETIC_MISMATCH",)
 
 
 def test_ejemplo_possible_duplicate():

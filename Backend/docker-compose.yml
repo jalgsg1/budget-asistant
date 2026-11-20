@@ -68,8 +68,8 @@ services:
 
   # Agente CLI interactivo (perfil "cli"; usa MCP por stdio dentro del contenedor):
   #   docker compose run --rm gestor-facturas python -m agent.main /app/facturas/mi_factura.jpg
-  gestor-facturas:
-    <<: *comun
-    profiles: ["cli"]
-    stdin_open: true
-    tty: true
+  # gestor-facturas:
+  #   <<: *comun
+  #   profiles: ["cli"]
+  #   stdin_open: true
+  #   tty: true

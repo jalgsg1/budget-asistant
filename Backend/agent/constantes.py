@@ -12,7 +12,6 @@ from finanzas_mcp.constantes import AUTO_TOKEN_PREFIX  # noqa: F401
 ALERTAS: tuple[str, ...] = (
     "LOW_OCR_CONFIDENCE",
     "HIGH_AMOUNT",
-    "ARITHMETIC_MISMATCH",
     "POSSIBLE_DUPLICATE",
     "SUSPICIOUS_CONTENT",
 )

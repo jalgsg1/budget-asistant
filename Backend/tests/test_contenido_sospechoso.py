@@ -213,7 +213,7 @@ def test_ninguna_factura_legitima_del_repositorio_es_sospechosa():
             revisadas += 1
             r = escanear(json.dumps({k: e.get(k) for k in CAMPOS}, ensure_ascii=False))
             assert r.sospechoso is False, (directorio, e["imagen"], r.ids)
-    assert revisadas >= 60
+    assert revisadas >= 58
 
 
 @pytest.mark.parametrize(

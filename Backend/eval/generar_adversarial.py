@@ -141,14 +141,6 @@ def construir_casos(salida: Path) -> list[dict[str, Any]]:
         return _entrada(imagen, f, dificultad, RESULTADO_NO_REGISTRAR,
                         tipo="integridad", subtipo=subtipo, **extra)
 
-    # Inconsistencia aritmética (R4): subtotal + iva != total
-    for k in range(3):
-        i = nuevo()
-        sub = 10000.0 + 2500 * k
-        f = _factura(i, COMERCIOS[k], f"2025-03-{10 + k:02d}", "CRC", sub)
-        f["total"] = round(f["total"] + 150.0 + 25 * k, 2)
-        casos.append(caso_base(f"integ-aritmetica-{k + 1}", "inconsistencia_aritmetica", f))
-
     # Fecha inválida (R2): malformadas y futuras
     fechas = (("malformada", "2025-04-31"), ("malformada", "2025-02-30"), ("futura", "2099-01-15"),
               ("futura", "2087-06-20"))

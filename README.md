@@ -9,7 +9,7 @@ Proyecto de la maestría MISIA (Cenfotec), curso IA distribuida.
 El agente ejecuta un pipeline de seis pasos por factura:
 
 1. Extracción de texto con OCR basado en un LLM con visión (OpenAI GPT-4o o Anthropic Claude, configurable).
-2. Validación de campos obligatorios, fecha, moneda y coherencia aritmética.
+2. Validación de campos obligatorios, fecha y moneda.
 3. Validación de la categoría contra una lista cerrada.
 4. Detección de duplicados.
 5. Confirmación explícita del usuario (con confirmación adicional para montos altos).

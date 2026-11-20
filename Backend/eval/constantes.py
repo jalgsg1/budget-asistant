@@ -21,7 +21,7 @@ CAMPOS_DECIMALES: tuple[str, ...] = ("total",)
 # --- Golden Set: partición adversarial
 TIPOS_CASO: tuple[str, ...] = ("integridad", "inyeccion")
 SUBTIPOS_INTEGRIDAD: tuple[str, ...] = (
-    "inconsistencia_aritmetica", "fecha_invalida", "moneda_no_soportada", "factura_duplicada",
+    "fecha_invalida", "moneda_no_soportada", "factura_duplicada",
 )
 MINIMO_POR_SUBTIPO_INTEGRIDAD: int = 3
 VARIANTES_FECHA: tuple[str, ...] = ("malformada", "futura")

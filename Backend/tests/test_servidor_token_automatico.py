@@ -70,7 +70,6 @@ _totales = st.one_of(
     st.floats(min_value=0.01, max_value=300.0, allow_nan=False).map(lambda x: round(x, 2)),
     st.floats(min_value=0.01, max_value=120000.0, allow_nan=False).map(lambda x: round(x, 2)),
 )
-_aritmetica = st.sampled_from(["ninguna", "consistente", "inconsistente"])
 _confianzas = st.one_of(
     st.none(),
     st.just(UMBRAL_OCR),
@@ -99,19 +98,7 @@ def _datos(draw, validos: bool = False):
             "moneda": draw(_monedas),
             "categoria": draw(_categorias),
         }
-    modo = draw(_aritmetica)
-    if modo == "consistente":
-        sub = round(d["total"] / 2, 2)
-        d["subtotal"], d["iva"] = sub, round(d["total"] - sub, 2)
-    elif modo == "inconsistente":
-        d["subtotal"], d["iva"] = round(d["total"] + 5.0, 2), 1.0
     return d
-
-
-def _aritmetica_invalida(d: dict) -> bool:
-    if d.get("subtotal") is None or d.get("iva") is None:
-        return False
-    return round(abs(d["subtotal"] + d["iva"] - d["total"]), 2) > 0.01
 
 
 def _contar(repo: TransactionRepository) -> int:
@@ -197,10 +184,7 @@ class TestProperty9AutoRechazadoEnSiempre(SinRedTestCase):
     def test_sin_token_falla_con_missing_confirmation(self, d, token, modo):
         codigo, nuevas, _ = _ejecutar(d, token, None, modo)
         # R1-R7 pasan con datos válidos de monto bajo; R8 exige el token.
-        if d.get("subtotal") is not None and _aritmetica_invalida(d):
-            self.assertEqual(codigo, "ARITHMETIC_INCONSISTENCY")
-        else:
-            self.assertEqual(codigo, "MISSING_CONFIRMATION_TOKEN")
+        self.assertEqual(codigo, "MISSING_CONFIRMATION_TOKEN")
         self.assertEqual(nuevas, 0)
 
 
@@ -227,8 +211,7 @@ class TestProperty10RevalidacionIndependiente(SinRedTestCase):
             if d["total"] > UMBRALES[d["moneda"]]:
                 esperado = "HIGH_AMOUNT_CONFIRMATION_REQUIRED"
             elif (
-                _aritmetica_invalida(d)
-                or duplicado
+                duplicado
                 or conf is None
                 or conf < UMBRAL_OCR
                 or cont is not False
@@ -239,7 +222,7 @@ class TestProperty10RevalidacionIndependiente(SinRedTestCase):
         self.assertEqual(nuevas, 1 if esperado is None else 0)
         if codigo == "HUMAN_CONFIRMATION_REQUIRED":
             bajo = msg.lower()
-            for palabra in ("duplic", "aritm", "arithmetic", "confianza", "sospech", "contenido", "ocr"):
+            for palabra in ("duplic", "confianza", "sospech", "contenido", "ocr"):
                 self.assertNotIn(palabra, bajo)
 
 
@@ -375,12 +358,6 @@ class TestRechazoTokenAutomaticoEjemplos(SinRedTestCase):
             _factura(total=150.0), self.TOKEN, None, "adaptativo", conf=0.9, cont=False
         )
         self.assertEqual(codigo, "HIGH_AMOUNT_CONFIRMATION_REQUIRED")
-        self.assertEqual(nuevas, 0)
-
-    def test_aritmetica_inconsistente_rechazada(self):
-        d = _factura(subtotal=30.0, iva=1.0)
-        codigo, nuevas, _ = _ejecutar(d, self.TOKEN, None, "adaptativo", conf=0.9, cont=False)
-        self.assertEqual(codigo, "HUMAN_CONFIRMATION_REQUIRED")
         self.assertEqual(nuevas, 0)
 
     def test_duplicado_rechazado(self):

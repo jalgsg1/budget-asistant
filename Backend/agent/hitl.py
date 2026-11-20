@@ -34,9 +34,6 @@ class EntradaAlertas:
     total: Optional[float]
     moneda: Optional[str]
     umbrales_monto: Mapping[str, float]
-    subtotal_extraido: Optional[float]
-    iva_extraido: Optional[float]
-    total_extraido: Optional[float]
     n_duplicados: int
     contenido_sospechoso: bool
 
@@ -61,18 +58,11 @@ def _monto_alto(e: EntradaAlertas) -> bool:
     return umbral is not None and e.total > umbral
 
 
-def _aritmetica_invalida(e: EntradaAlertas) -> bool:
-    if e.subtotal_extraido is None or e.iva_extraido is None or e.total_extraido is None:
-        return False
-    return round(abs(e.subtotal_extraido + e.iva_extraido - e.total_extraido), 2) > 0.01
-
-
 def evaluar_alertas(e: EntradaAlertas) -> tuple[str, ...]:
     """Alertas aplicables, siempre en el orden de ``ALERTAS``."""
     aplica = {
         "LOW_OCR_CONFIDENCE": _confianza_baja(e),
         "HIGH_AMOUNT": _monto_alto(e),
-        "ARITHMETIC_MISMATCH": _aritmetica_invalida(e),
         "POSSIBLE_DUPLICATE": e.n_duplicados > 0,
         "SUSPICIOUS_CONTENT": bool(e.contenido_sospechoso),
     }
